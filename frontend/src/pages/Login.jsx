@@ -93,10 +93,18 @@ const Login = () => {
 
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>Demo credentials:</p>
-          <p className="mt-2 font-mono text-xs bg-gray-100 p-2 rounded">
-            Email: parent@example.com<br />
-            Password: password
-          </p>
+          <div className="mt-2 space-y-2">
+            <p className="font-mono text-xs bg-blue-50 p-2 rounded border border-blue-200">
+              <strong>Teacher:</strong><br />
+              Email: teacher@example.com<br />
+              Password: password
+            </p>
+            <p className="font-mono text-xs bg-gray-100 p-2 rounded">
+              <strong>Parent:</strong><br />
+              Email: parent@example.com<br />
+              Password: password
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -7,13 +7,14 @@ import {
   Utensils, 
   Image as ImageIcon, 
   Settings, 
-  LogOut 
+  LogOut,
+  Users
 } from 'lucide-react';
 
 const Sidebar = ({ onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isTeacher } = useAuth();
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -21,6 +22,7 @@ const Sidebar = ({ onClose }) => {
     { name: 'Activities', href: '/activities', icon: ClipboardList },
     { name: 'Meals', href: '/meals', icon: Utensils },
     { name: 'Media', href: '/media', icon: ImageIcon },
+    ...(isTeacher ? [{ name: 'Parent Management', href: '/parents', icon: Users }] : []),
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

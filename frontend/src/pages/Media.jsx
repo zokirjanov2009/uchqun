@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import api from '../services/api';
+import { dataStore } from '../services/dataStore';
 import Card from '../components/Card';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { 
   Image as ImageIcon, 
   Play, 
@@ -10,30 +12,109 @@ import {
   LayoutGrid, 
   Film, 
   Maximize2,
-  ChevronLeft
+  ChevronLeft,
+  Plus,
+  Edit2,
+  Trash2,
+  Save
 } from 'lucide-react';
 
 const Media = () => {
+  const { isTeacher } = useAuth();
+  const { success, error: showError } = useToast();
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [showModal, setShowModal] = useState(false);
+  const [editingMedia, setEditingMedia] = useState(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    type: 'photo',
+    url: '',
+    thumbnail: '',
+    date: new Date().toISOString().split('T')[0],
+  });
 
   useEffect(() => {
-    const loadMedia = async () => {
-      try {
-        const response = await api.get('/media');
-        const mediaData = response.data?.media || response.data || [];
-        setMedia(Array.isArray(mediaData) ? mediaData : []);
-      } catch (error) {
-        console.error('Error loading media:', error);
-        setMedia([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadMedia();
   }, []);
+
+  const loadMedia = () => {
+    try {
+      const mediaData = dataStore.getMedia();
+      setMedia(Array.isArray(mediaData) ? mediaData : []);
+    } catch (error) {
+      console.error('Error loading media:', error);
+      setMedia([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setEditingMedia(null);
+    setFormData({
+      title: '',
+      description: '',
+      type: 'photo',
+      url: '',
+      thumbnail: '',
+      date: new Date().toISOString().split('T')[0],
+    });
+    setShowModal(true);
+  };
+
+  const handleEdit = (mediaItem, e) => {
+    e?.stopPropagation(); // Prevent opening modal view
+    setEditingMedia(mediaItem);
+    setFormData({
+      title: mediaItem.title || '',
+      description: mediaItem.description || '',
+      type: mediaItem.type || 'photo',
+      url: mediaItem.url || '',
+      thumbnail: mediaItem.thumbnail || mediaItem.url || '',
+      date: mediaItem.date ? mediaItem.date.split('T')[0] : new Date().toISOString().split('T')[0],
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (mediaId, e) => {
+    e?.stopPropagation(); // Prevent opening modal view
+    if (!window.confirm('Are you sure you want to delete this media?')) {
+      return;
+    }
+
+    try {
+      dataStore.deleteMedia(mediaId);
+      success('Media deleted successfully');
+      loadMedia();
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      showError('Error deleting media');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (editingMedia) {
+        dataStore.updateMedia(editingMedia.id, formData);
+        success('Media updated successfully');
+      } else {
+        dataStore.createMedia(formData);
+        success('Media created successfully');
+      }
+      
+      setShowModal(false);
+      loadMedia();
+    } catch (error) {
+      console.error('Error saving media:', error);
+      showError(error.message || 'Error saving media');
+    }
+  };
 
   const filteredMedia = filter === 'all' ? media : media.filter((item) => item.type === filter);
 
@@ -49,8 +130,9 @@ const Media = () => {
           <p className="text-gray-500 font-medium mt-1">Maktab hayotidan eng sara lahzalar</p>
         </div>
 
-        {/* --- Glassmorphism Filters --- */}
-        <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl border border-gray-200">
+        <div className="flex items-center gap-3">
+          {/* --- Glassmorphism Filters --- */}
+          <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl border border-gray-200">
           {[
             { id: 'all', label: 'Hammasi', icon: LayoutGrid },
             { id: 'photo', label: 'Rasmlar', icon: ImageIcon },
@@ -69,6 +151,18 @@ const Media = () => {
               <span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
+          </div>
+
+          {/* Add Button (Teachers only) */}
+          {isTeacher && (
+            <button
+              onClick={handleCreate}
+              className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="hidden sm:inline">Add Media</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -106,7 +200,27 @@ const Media = () => {
                   </div>
                 )}
 
-                <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Action Buttons (Teachers only) */}
+                {isTeacher && (
+                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => handleEdit(item, e)}
+                      className="bg-blue-500/90 hover:bg-blue-600 backdrop-blur-md p-2 rounded-xl text-white transition-colors"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(item.id, e)}
+                      className="bg-red-500/90 hover:bg-red-600 backdrop-blur-md p-2 rounded-xl text-white transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
                     <Maximize2 className="w-4 h-4 text-white" />
                 </div>
               </div>
@@ -208,6 +322,126 @@ const Media = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {editingMedia ? 'Edit Media' : 'Add Media'}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  required
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="photo">Photo</option>
+                    <option value="video">Video</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Media URL
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Thumbnail URL (optional, defaults to media URL)
+                </label>
+                <input
+                  type="url"
+                  value={formData.thumbnail}
+                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                  placeholder="https://example.com/thumbnail.jpg"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  {editingMedia ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

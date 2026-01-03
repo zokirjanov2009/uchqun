@@ -11,6 +11,7 @@ import Media from './pages/Media';
 import Meals from './pages/Meals';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
+import ParentManagement from './pages/ParentManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 
@@ -36,6 +37,7 @@ function App() {
                 <Route path="activities" element={<Activities />} />
                 <Route path="meals" element={<Meals />} />
                 <Route path="media" element={<Media />} />
+                <Route path="parents" element={<ParentManagement />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="help" element={<Help />} />
               </Route>
