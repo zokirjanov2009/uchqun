@@ -63,6 +63,37 @@ VITE_API_URL=https://uchqun-production.up.railway.app/api
 VITE_API_URL=https://uchqun-production.up.railway.app/api
 ```
 
+## Railway Deployment
+
+Railway'da frontend deploy qilish uchun:
+
+### Qadam-baqadam:
+
+1. **Har bir frontend uchun alohida Railway service yarating:**
+   - Railway dashboard'da **+ New** → **GitHub Repo**
+   - Repository'ni tanlang
+   - **Root Directory** ni frontend papkasiga o'rnating:
+     - Admin: `admin`
+     - Reception: `reception`
+     - Teacher: `teacher`
+     - Super Admin: `super-admin`
+
+2. **Environment Variable qo'shing:**
+   - Service → **Variables** tab
+   - **+ New Variable**
+   - **Name:** `VITE_API_URL`
+   - **Value:** `https://uchqun-production.up.railway.app/api`
+
+3. **Build Settings (avtomatik, lekin tekshirib ko'ring):**
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `npm start`
+
+4. **Deploy qiling**
+
+**Muhim:** Har bir frontend uchun alohida service yarating va Root Directory'ni to'g'ri o'rnating!
+
+Batafsil: `RAILWAY_FRONTEND_DEPLOY.md` faylini ko'ring.
+
 ## Vercel/Netlify Deployment
 
 Agar Vercel yoki Netlify'da deploy qilsangiz:
