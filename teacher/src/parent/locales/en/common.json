@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "home": "Home",
+    "activities": "Activities",
+    "media": "Media",
+    "meals": "Meals",
+    "profile": "Profile",
+    "exit": "Exit",
+    "menu": "Main menu"
+  },
+  "child": {
+    "title": "Child Profile",
+    "selectPrompt": "Select your child",
+    "selectLabel": "Choose child",
+    "errorNotFound": "No information found about your child. Please contact the teacher.",
+    "errorLoading": "Error loading data. Please try again.",
+    "notFoundTitle": "Data not found",
+    "notFoundDesc": "No information found about your child.",
+    "notFoundHelp": "Please contact the teacher or the system administrator.",
+    "ageYears": "{{count}} years",
+    "basicInfo": "Basic information",
+    "fullName": "Full name",
+    "birthDate": "Date of birth",
+    "disability": "Disability type",
+    "teacher": "Teacher",
+    "specialNeeds": "Special needs and allergies",
+    "emergency": "Emergency contact",
+    "weeklyResults": "Weekly results",
+    "activities": "Activities",
+    "meals": "Meals",
+    "media": "Media"
+  },
+  "dashboard": {
+    "role": "My Role: Parent",
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "activities": "Activities",
+    "mealsTracked": "Meals Tracked",
+    "photos": "Photos"
+  },
+  "activities": {
+    "title": "Daily Activities",
+    "subtitle": "Track your child's daily growth and learning",
+    "all": "All",
+    "learning": "Learning",
+    "therapy": "Therapy",
+    "social": "Social",
+    "physical": "Physical",
+    "durationMinutes": "{{count}} min",
+    "engagement": "Engagement",
+    "empty": "No activities of this type yet"
+  },
+  "meals": {
+    "title": "Meals & Nutrition",
+    "subtitle": "Daily meal plan and intake tracking",
+    "selectDay": "Select day",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "snack": "Snack",
+    "dinner": "Dinner",
+    "quantity": "Quantity",
+    "eaten": "Eaten",
+    "notEaten": "Not eaten",
+    "note": "Note",
+    "empty": "No meals recorded for this day",
+    "dailySummary": "Daily summary",
+    "totalMeals": "Total meals",
+    "skipped": "Skipped",
+    "quality": "Quality",
+    "excellent": "Excellent"
+  },
+  "media": {
+    "title": "Media Gallery",
+    "subtitle": "Best moments from school life",
+    "filterAll": "All",
+    "filterPhoto": "Photos",
+    "filterVideo": "Videos",
+    "empty": "No media files yet",
+    "back": "Go back",
+    "date": "Date",
+    "photoLabel": "Photo",
+    "videoLabel": "Video",
+    "video": {
+      "loading": "Loading video...",
+      "failedTitle": "Failed to load video",
+      "failedDesc": "Please check the video URL",
+      "unsupportedTitle": "Video URL not supported",
+      "unsupportedDesc": "Please use YouTube, Vimeo, or direct video file URLs (.mp4, .webm, etc.)",
+      "openNewTab": "Open in New Tab"
+    }
+  },
+  "language": "Language"
+}
+

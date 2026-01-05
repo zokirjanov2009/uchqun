@@ -1,0 +1,121 @@
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import logger from '../utils/logger.js';
+
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign(
+    { userId },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '15m' }
+  );
+  
+  const refreshToken = jwt.sign(
+    { userId },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Business Logic: Reception cannot log in until documents are approved by Admin
+    if (user.role === 'reception') {
+      if (!user.documentsApproved || !user.isActive) {
+        return res.status(403).json({ 
+          error: 'Account not approved. Please wait for Admin approval.',
+          requiresApproval: true,
+          documentsApproved: user.documentsApproved,
+          isActive: user.isActive,
+        });
+      }
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user.id);
+
+    res.json({
+      success: true,
+      accessToken,
+      refreshToken,
+      user: user.toJSON(),
+    });
+  } catch (error) {
+    logger.error('Login error', { error: error.message, stack: error.stack });
+    res.status(500).json({ error: 'Login failed' });
+  }
+};
+
+export const refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Refresh token is required' });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findByPk(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+
+    const { accessToken } = generateTokens(user.id);
+
+    res.json({
+      success: true,
+      accessToken,
+    });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Invalid or expired refresh token' });
+    }
+    logger.error('Refresh token error', { error: error.message, stack: error.stack });
+    res.status(500).json({ error: 'Token refresh failed' });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    // Explicitly exclude password and ensure we only return the current authenticated user's data
+    const user = await User.findByPk(req.user.id, {
+      attributes: { exclude: ['password'] },
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Ensure we're only returning the authenticated user's data (security check)
+    if (user.id !== req.user.id) {
+      logger.warn('Security: Attempted to access different user data', {
+        requestedUserId: req.user.id,
+        returnedUserId: user.id,
+      });
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    res.json(user.toJSON());
+  } catch (error) {
+    logger.error('Get me error', { error: error.message, stack: error.stack, userId: req.user?.id });
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+};
+

@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "home": "Bosh sahifa",
+    "activities": "Faoliyatlar",
+    "media": "Media",
+    "meals": "Ovqatlar",
+    "profile": "Profil",
+    "exit": "Chiqish",
+    "menu": "Asosiy menyu"
+  },
+  "child": {
+    "title": "Farzand profili",
+    "selectPrompt": "Farzandingizni tanlang",
+    "selectLabel": "Farzandni tanlang",
+    "errorNotFound": "Farzandingiz haqida ma'lumot topilmadi. Iltimos, o'qituvchiga murojaat qiling.",
+    "errorLoading": "Ma'lumotlarni yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    "notFoundTitle": "Ma'lumot topilmadi",
+    "notFoundDesc": "Farzandingiz haqida ma'lumot topilmadi.",
+    "notFoundHelp": "Iltimos, o'qituvchiga yoki tizim administratoriga murojaat qiling.",
+    "ageYears": "{{count}} yosh",
+    "basicInfo": "Asosiy ma'lumotlar",
+    "fullName": "To'liq ismi",
+    "birthDate": "Tug'ilgan sana",
+    "disability": "Imkoniyat turi",
+    "teacher": "O'qituvchi",
+    "specialNeeds": "Maxsus ehtiyojlar va allergiyalar",
+    "emergency": "Favqulodda bog'lanish",
+    "weeklyResults": "Haftalik natijalar",
+    "activities": "Mashg'ulotlar",
+    "meals": "Ovqatlanish",
+    "media": "Media"
+  },
+  "dashboard": {
+    "role": "Mening rolim: Ota-ona",
+    "welcome": "Xush kelibsiz",
+    "overview": "Umumiy ko‘rinish",
+    "activities": "Faoliyatlar",
+    "mealsTracked": "Ovqatlar",
+    "photos": "Rasmlar"
+  },
+  "activities": {
+    "title": "Kunlik mashg'ulotlar",
+    "subtitle": "Farzandingizning kunlik o'sishi va o'rganishini kuzating",
+    "all": "Hammasi",
+    "learning": "Ta'lim",
+    "therapy": "Terapiya",
+    "social": "Ijtimoiy",
+    "physical": "Jismoniy",
+    "durationMinutes": "{{count}} daqiqa",
+    "engagement": "Ishtirok",
+    "empty": "Hozircha ushbu turdagi mashg'ulotlar yo'q"
+  },
+  "meals": {
+    "title": "Taomlar va ovqatlanish",
+    "subtitle": "Kunlik taomnoma va iste'mol nazorati",
+    "selectDay": "Kunni tanlang",
+    "breakfast": "Nonushta",
+    "lunch": "Tushlik",
+    "snack": "Tamaddi",
+    "dinner": "Kechki ovqat",
+    "quantity": "Miqdor",
+    "eaten": "Iste'mol qilindi",
+    "notEaten": "Iste'mol qilinmadi",
+    "note": "Eslatma",
+    "empty": "Bu kunda taomlar qayd etilmagan",
+    "dailySummary": "Kunlik xulosa",
+    "totalMeals": "Jami taomlar",
+    "skipped": "Qoldirildi",
+    "quality": "Sifat",
+    "excellent": "A'lo"
+  },
+  "media": {
+    "title": "Media galereya",
+    "subtitle": "Maktab hayotidan eng sara lahzalar",
+    "filterAll": "Hammasi",
+    "filterPhoto": "Rasmlar",
+    "filterVideo": "Videolar",
+    "empty": "Hozircha media fayllar yo'q",
+    "back": "Orqaga qaytish",
+    "date": "Sana",
+    "photoLabel": "Rasm",
+    "videoLabel": "Video",
+    "video": {
+      "loading": "Video yuklanmoqda...",
+      "failedTitle": "Videoni yuklab bo'lmadi",
+      "failedDesc": "Iltimos, video manzilini tekshiring",
+      "unsupportedTitle": "Video manzili qo'llab-quvvatlanmaydi",
+      "unsupportedDesc": "YouTube, Vimeo yoki to'g'ridan-to'g'ri video fayl (mp4, webm va h.k.) manzillaridan foydalaning",
+      "openNewTab": "Yangi oynada ochish"
+    }
+  },
+  "language": "Til"
+}
+

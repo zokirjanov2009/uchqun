@@ -1,0 +1,87 @@
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // For production, this should upload to GCS instead
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, ext);
+    const sanitizedName = basename.replace(/[^a-zA-Z0-9]/g, '_');
+    cb(null, `${sanitizedName}-${uniqueSuffix}${ext}`);
+  },
+});
+
+// File filter
+const fileFilter = (req, file, cb) => {
+  // Check file type
+  const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
+  
+  if (allowedImageTypes.includes(file.mimetype) || allowedVideoTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM, QuickTime) are allowed.'), false);
+  }
+};
+
+// Configure multer
+export const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max file size
+  },
+});
+
+// Specific upload handlers
+export const uploadSingle = upload.single('file');
+export const uploadMultiple = upload.array('files', 10); // Max 10 files
+
+// Error handler for multer errors
+export const handleUploadError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        error: 'File too large',
+        message: 'File size exceeds the maximum allowed size of 50MB',
+      });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        error: 'Too many files',
+        message: 'Maximum 10 files allowed per upload',
+      });
+    }
+    return res.status(400).json({
+      error: 'Upload error',
+      message: err.message,
+    });
+  }
+  if (err) {
+    return res.status(400).json({
+      error: 'Upload error',
+      message: err.message,
+    });
+  }
+  next();
+};
+
+
+

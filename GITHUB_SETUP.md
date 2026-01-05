@@ -17,8 +17,8 @@ Your project has been initialized with Git and the initial commit has been creat
 2. Click the **"+"** icon in the top right corner
 3. Select **"New repository"**
 4. Fill in the details:
-   - **Repository name**: `imha` (or any name you prefer)
-   - **Description**: "IMHA Platform - Parent portal for special education schools"
+   - **Repository name**: `uchqun` (or any name you prefer)
+   - **Description**: "Uchqun Platform - Parent portal for special education schools"
    - **Visibility**: Choose **Private** (for team collaboration) or **Public**
    - **DO NOT** initialize with README, .gitignore, or license (we already have these)
 5. Click **"Create repository"**
@@ -27,18 +27,18 @@ Your project has been initialized with Git and the initial commit has been creat
 
 After creating the repository, GitHub will show you commands. Use these commands in your terminal:
 
-**If your repository is named `imha`:**
+**If your repository is named `uchqun`:**
 
 ```powershell
-cd C:\Users\LENOVO\Desktop\imha
-git remote add origin https://github.com/YOUR_USERNAME/imha.git
+cd C:\Users\LENOVO\Desktop\uchqun
+git remote add origin https://github.com/YOUR_USERNAME/uchqun.git
 git branch -M main
 git push -u origin main
 ```
 
 **Note:** Replace `YOUR_USERNAME` with your actual GitHub username.
 
-**If your repository has a different name, replace `imha` in the URL with your repository name.**
+**If your repository has a different name, replace `uchqun` in the URL with your repository name.**
 
 ### Step 3: Verify the Push
 
@@ -50,7 +50,7 @@ Once set up, your team can:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/imha.git
+   git clone https://github.com/YOUR_USERNAME/uchqun.git
    ```
 
 2. **Pull latest changes:**
@@ -82,7 +82,7 @@ Once set up, your team can:
 **If you get "remote origin already exists" error:**
 ```powershell
 git remote remove origin
-git remote add origin https://github.com/YOUR_USERNAME/imha.git
+git remote add origin https://github.com/YOUR_USERNAME/uchqun.git
 ```
 
 **If you need to rename the branch to main:**

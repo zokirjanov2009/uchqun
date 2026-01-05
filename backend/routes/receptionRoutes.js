@@ -1,0 +1,57 @@
+import express from 'express';
+import { authenticate, requireReception } from '../middleware/auth.js';
+import { upload } from '../middleware/upload.js';
+import {
+  uploadDocument,
+  getMyDocuments,
+  getVerificationStatus,
+  createTeacher,
+  createParent,
+  getTeachers,
+  getParents,
+  updateTeacher,
+  updateParent,
+  deleteTeacher,
+  deleteParent,
+} from '../controllers/receptionController.js';
+import { getGroups } from '../controllers/groupController.js';
+
+const router = express.Router();
+
+/**
+ * Reception Routes
+ * 
+ * Business Logic:
+ * - Reception provides login credentials (email & password) to Teachers and Parents
+ * - Reception cannot access Activity, Meals, Media, News, or Children modules
+ * - Reception must upload required documents after installation
+ * - Documents are visible to Admin for review
+ */
+
+// All routes require Reception authentication
+router.use(authenticate);
+router.use(requireReception);
+
+// Document management (for Reception's own documents)
+router.post('/documents', upload.single('file'), uploadDocument);
+router.get('/documents', getMyDocuments);
+router.get('/verification-status', getVerificationStatus);
+
+// Teacher management
+router.post('/teachers', createTeacher);
+router.get('/teachers', getTeachers);
+router.put('/teachers/:id', updateTeacher);
+router.delete('/teachers/:id', deleteTeacher);
+
+// Parent management
+router.post('/parents', createParent);
+router.get('/parents', getParents);
+router.put('/parents/:id', updateParent);
+router.delete('/parents/:id', deleteParent);
+
+// Groups (for parent assignment)
+router.get('/groups', getGroups);
+
+export default router;
+
+
