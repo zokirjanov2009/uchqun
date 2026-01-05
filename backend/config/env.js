@@ -1,5 +1,10 @@
 import Joi from 'joi';
 
+// Helper function to check if DATABASE_URL is provided
+const hasDatabaseUrl = () => {
+  return !!(process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL);
+};
+
 // Define environment variable schema
 const envSchema = Joi.object({
   // Server Configuration
@@ -9,9 +14,13 @@ const envSchema = Joi.object({
   PORT: Joi.number().default(5000),
 
   // Database Configuration
-  DB_NAME: Joi.string().required(),
-  DB_USER: Joi.string().required(),
-  DB_PASSWORD: Joi.string().required(),
+  // Support both DATABASE_URL (Railway/Heroku) and individual variables
+  DATABASE_URL: Joi.string().uri().optional(),
+  DATABASE_PUBLIC_URL: Joi.string().uri().optional(),
+  // Individual DB variables (optional if DATABASE_URL is provided)
+  DB_NAME: Joi.string().optional(),
+  DB_USER: Joi.string().optional(),
+  DB_PASSWORD: Joi.string().optional(),
   DB_HOST: Joi.string().default('localhost'),
   DB_PORT: Joi.number().default(5432),
 
@@ -57,6 +66,19 @@ const envSchema = Joi.object({
  * @throws {Error} If validation fails
  */
 export function validateEnv() {
+  // Custom validation: Check if DATABASE_URL is provided, if not, require individual DB vars
+  const dbUrlProvided = hasDatabaseUrl();
+  
+  // If DATABASE_URL is not provided, ensure individual DB variables are present
+  if (!dbUrlProvided) {
+    if (!process.env.DB_NAME || !process.env.DB_USER || !process.env.DB_PASSWORD) {
+      throw new Error(
+        'Environment variable validation failed:\n' +
+        'Either DATABASE_URL/DATABASE_PUBLIC_URL must be provided, or all of DB_NAME, DB_USER, and DB_PASSWORD are required'
+      );
+    }
+  }
+
   const { error, value } = envSchema.validate(process.env, {
     abortEarly: false, // Collect all errors
     stripUnknown: true, // Remove unknown keys
@@ -74,7 +96,7 @@ export function validateEnv() {
 
   // Additional validation: Check that production has HTTPS
   if (value.NODE_ENV === 'production') {
-    if (!value.FRONTEND_URL.startsWith('https://')) {
+    if (value.FRONTEND_URL && !value.FRONTEND_URL.startsWith('https://')) {
       console.warn('Warning: FRONTEND_URL should use HTTPS in production');
     }
   }
