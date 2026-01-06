@@ -10,21 +10,14 @@
     "menu": "Menyu"
   },
   "login": {
-    "title": "Uchqun O'qituvchi portali",
+    "title": "Uchqun Portal",
     "subtitle": "Maxsus ta'lim maktabi boshqaruvi",
-    "roleLabel": "Rolni tanlang",
-    "roleParent": "Ota-ona",
-    "roleTeacher": "O'qituvchi",
     "email": "Email manzil",
     "password": "Parol",
     "submit": "Kirish",
     "loading": "Kirish...",
-    "accessOnly": "Faqat o'qituvchilar uchun",
-    "accessDenied": "Ruxsat berilmaydi. O'qituvchi akkaunti kerak.",
-    "accessDeniedRole": "Ruxsat berilmadi. Sizning rolingiz: {{actual}}, tanlangan: {{selected}}.",
-    "actualUnknown": "noma'lum",
     "invalid": "Email yoki parol noto'g'ri",
-    "accessAll": "To'g'ri portalga kirish uchun rolingizni tanlang"
+    "invalidRole": "Noto'g'ri foydalanuvchi roli"
   },
   "dashboard": {
     "role": "Mening rolim: O'qituvchi",

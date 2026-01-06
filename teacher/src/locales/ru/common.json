@@ -10,21 +10,14 @@
     "menu": "Меню"
   },
   "login": {
-    "title": "Uchqun Портал учителя",
+    "title": "Uchqun Portal",
     "subtitle": "Управление школой спецобразования",
-    "roleLabel": "Выберите роль",
-    "roleParent": "Родитель",
-    "roleTeacher": "Учитель",
     "email": "Email адрес",
     "password": "Пароль",
     "submit": "Войти",
     "loading": "Вход...",
-    "accessOnly": "Доступ только для учителей",
-    "accessDenied": "Доступ запрещен. Требуется аккаунт учителя.",
-    "accessDeniedRole": "Доступ запрещен. Ваша роль: {{actual}}, выбрано: {{selected}}.",
-    "actualUnknown": "неизвестно",
     "invalid": "Неверный email или пароль",
-    "accessAll": "Используйте свою роль, чтобы войти в нужный портал"
+    "invalidRole": "Неверная роль пользователя"
   },
   "dashboard": {
     "role": "Моя роль: Учитель",

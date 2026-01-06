@@ -10,21 +10,14 @@
     "menu": "Menu"
   },
   "login": {
-    "title": "Uchqun Teacher Portal",
+    "title": "Uchqun Portal",
     "subtitle": "Special Education School Management",
-    "roleLabel": "Select role",
-    "roleParent": "Parent",
-    "roleTeacher": "Teacher",
     "email": "Email Address",
     "password": "Password",
     "submit": "Login",
     "loading": "Logging in...",
-    "accessOnly": "Teacher access only",
-    "accessDenied": "Access denied. Teacher account required.",
-    "accessDeniedRole": "Access denied. Your role is {{actual}}, selected {{selected}}.",
-    "actualUnknown": "unknown",
     "invalid": "Invalid email or password",
-    "accessAll": "Use your role to enter the correct portal"
+    "invalidRole": "Invalid user role"
   },
   "dashboard": {
     "role": "My Role: Teacher",

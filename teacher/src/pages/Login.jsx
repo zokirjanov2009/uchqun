@@ -7,10 +7,9 @@ import { useTranslation } from 'react-i18next';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('parent');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, logout } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -24,18 +23,13 @@ const Login = () => {
     if (result.success) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-      if (role === 'parent' && user.role === 'parent') {
+      // Redirect based on user role from backend
+      if (user.role === 'parent') {
         navigate('/');
-      } else if ((role === 'teacher' || role === 'admin') && (user.role === 'teacher' || user.role === 'admin')) {
+      } else if (user.role === 'teacher' || user.role === 'admin') {
         navigate('/teacher');
       } else {
-        setError(
-          t('login.accessDeniedRole', {
-            actual: user.role || t('login.actualUnknown'),
-            selected: role,
-          })
-        );
-        logout();
+        setError(t('login.invalidRole') || 'Invalid user role');
       }
     } else {
       setError(result.error || t('login.invalid'));
@@ -61,21 +55,6 @@ const Login = () => {
               {error}
             </div>
           )}
-
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('login.roleLabel')}
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
-            >
-              <option value="parent">{t('login.roleParent')}</option>
-              <option value="teacher">{t('login.roleTeacher')}</option>
-            </select>
-          </div>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -123,9 +102,6 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>{t('login.accessAll')}</p>
-        </div>
       </div>
     </div>
   );
