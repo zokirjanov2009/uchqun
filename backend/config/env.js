@@ -1,4 +1,8 @@
 import Joi from 'joi';
+import dotenv from 'dotenv';
+
+// Load environment variables first
+dotenv.config();
 
 // Helper function to check if DATABASE_URL is provided
 const hasDatabaseUrl = () => {
