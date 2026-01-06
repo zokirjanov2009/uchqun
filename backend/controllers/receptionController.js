@@ -658,8 +658,24 @@ export const deleteParent = async (req, res) => {
  */
 export const createChildForParent = async (req, res) => {
   try {
+    // Debug: Log request body and files
+    logger.info('Create child for parent request', {
+      bodyKeys: Object.keys(req.body),
+      bodyValues: req.body,
+      hasFiles: !!req.files,
+      filesKeys: req.files ? Object.keys(req.files) : [],
+    });
+    
     // Get parentId from params or body
     const parentId = req.params.id || req.body.parentId;
+    
+    if (!parentId) {
+      logger.warn('Create child: parentId missing', {
+        params: req.params,
+        bodyKeys: Object.keys(req.body),
+      });
+      return res.status(400).json({ error: 'Parent ID is required' });
+    }
     
     // Verify parent exists and was created by this reception user
     const parent = await User.findOne({
@@ -667,6 +683,10 @@ export const createChildForParent = async (req, res) => {
     });
 
     if (!parent) {
+      logger.warn('Create child: parent not found', {
+        parentId,
+        receptionUserId: req.user.id,
+      });
       return res.status(404).json({ error: 'Parent not found or you do not have permission to add children to this parent' });
     }
 
@@ -679,9 +699,36 @@ export const createChildForParent = async (req, res) => {
     const specialNeeds = req.body['child[specialNeeds]'] || req.body.specialNeeds || null;
     const school = req.body['child[school]'] || req.body.school || 'Uchqun School';
 
+    // Debug: Log parsed values
+    logger.info('Create child: parsed values', {
+      parentId,
+      firstName: !!firstName,
+      lastName: !!lastName,
+      dateOfBirth: !!dateOfBirth,
+      gender,
+      disabilityType: !!disabilityType,
+      school: !!school,
+    });
+
     if (!firstName || !lastName || !dateOfBirth || !gender || !disabilityType || !school) {
+      logger.warn('Create child: validation failed', {
+        firstName: !!firstName,
+        lastName: !!lastName,
+        dateOfBirth: !!dateOfBirth,
+        gender,
+        disabilityType: !!disabilityType,
+        school: !!school,
+      });
       return res.status(400).json({ 
-        error: 'First name, last name, date of birth, gender, disability type, and school are required' 
+        error: 'First name, last name, date of birth, gender, disability type, and school are required',
+        missing: {
+          firstName: !firstName,
+          lastName: !lastName,
+          dateOfBirth: !dateOfBirth,
+          gender: !gender,
+          disabilityType: !disabilityType,
+          school: !school,
+        }
       });
     }
 

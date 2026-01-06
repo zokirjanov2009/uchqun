@@ -207,21 +207,45 @@ const ParentManagement = () => {
   const handleSubmitChild = async (e) => {
     e.preventDefault();
     
-    if (!selectedParentId) return;
+    if (!selectedParentId) {
+      showError('Parent ID is missing');
+      return;
+    }
+
+    // Validate required fields
+    if (!childFormData.firstName || !childFormData.lastName || !childFormData.dateOfBirth || 
+        !childFormData.disabilityType || !childFormData.school) {
+      showError('Please fill in all required fields');
+      return;
+    }
 
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('parentId', selectedParentId);
-      formDataToSend.append('child[firstName]', childFormData.firstName);
-      formDataToSend.append('child[lastName]', childFormData.lastName);
+      formDataToSend.append('child[firstName]', childFormData.firstName.trim());
+      formDataToSend.append('child[lastName]', childFormData.lastName.trim());
       formDataToSend.append('child[dateOfBirth]', childFormData.dateOfBirth);
-      formDataToSend.append('child[gender]', childFormData.gender);
-      formDataToSend.append('child[disabilityType]', childFormData.disabilityType);
-      if (childFormData.specialNeeds) formDataToSend.append('child[specialNeeds]', childFormData.specialNeeds);
-      formDataToSend.append('child[school]', childFormData.school);
+      formDataToSend.append('child[gender]', childFormData.gender || 'Male');
+      formDataToSend.append('child[disabilityType]', childFormData.disabilityType.trim());
+      if (childFormData.specialNeeds) {
+        formDataToSend.append('child[specialNeeds]', childFormData.specialNeeds.trim());
+      }
+      formDataToSend.append('child[school]', childFormData.school.trim());
       if (childFormData.photo) {
         formDataToSend.append('child[photo]', childFormData.photo);
       }
+      
+      // Debug: Log FormData contents
+      console.log('Sending FormData:', {
+        parentId: selectedParentId,
+        firstName: childFormData.firstName,
+        lastName: childFormData.lastName,
+        dateOfBirth: childFormData.dateOfBirth,
+        gender: childFormData.gender,
+        disabilityType: childFormData.disabilityType,
+        school: childFormData.school,
+        hasPhoto: !!childFormData.photo,
+      });
       
       await api.post('/reception/children', formDataToSend);
       success('Child added successfully');
@@ -230,7 +254,9 @@ const ParentManagement = () => {
       loadParents();
     } catch (error) {
       console.error('Error adding child:', error);
-      showError(error.response?.data?.error || 'Failed to add child');
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to add child';
+      const errorDetails = error.response?.data?.missing ? `Missing: ${JSON.stringify(error.response.data.missing)}` : '';
+      showError(`${errorMessage}${errorDetails ? ` - ${errorDetails}` : ''}`);
     }
   };
 
