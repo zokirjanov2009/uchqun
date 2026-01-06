@@ -57,6 +57,11 @@ const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
   : ['http://localhost:5173', 'http://localhost:5174'];
 
+// Log allowed origins in development
+if (process.env.NODE_ENV === 'development') {
+  logger.info('CORS allowed origins:', { origins: allowedOrigins });
+}
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -68,6 +73,7 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -75,13 +81,34 @@ app.use(cors({
       if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
         callback(null, true);
       } else {
+        // Log blocked origin for debugging
+        if (process.env.NODE_ENV === 'development') {
+          logger.warn('CORS blocked origin:', { origin, allowedOrigins });
+        }
         callback(new Error(`CORS: Origin ${origin} is not allowed`));
       }
     }
   },
-  credentials: true,
+  credentials: true, // Allow cookies and authorization headers
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: [
+    'Authorization',
+    'Content-Range',
+    'X-Content-Range',
+    'X-Total-Count'
+  ],
+  maxAge: 86400, // Cache preflight requests for 24 hours
+  preflightContinue: false, // Let cors handle preflight
+  optionsSuccessStatus: 204 // Some legacy browsers (IE11) choke on 204
 }));
 
 // Request logging (should be after body parsing but before routes)
