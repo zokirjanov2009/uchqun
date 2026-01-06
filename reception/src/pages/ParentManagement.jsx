@@ -27,6 +27,8 @@ const ParentManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showChildModal, setShowChildModal] = useState(false);
+  const [selectedParentId, setSelectedParentId] = useState(null);
   const [editingParent, setEditingParent] = useState(null);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -44,13 +46,21 @@ const ParentManagement = () => {
       disabilityType: '',
       specialNeeds: '',
       school: 'Uchqun School',
-      groupId: '',
-      photo: '',
-      emergencyContactName: '',
-      emergencyContactRelationship: 'Parent',
-      emergencyContactPhone: '',
+      photo: null, // Changed to null for file upload
     },
   });
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [childFormData, setChildFormData] = useState({
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    gender: 'Male',
+    disabilityType: '',
+    specialNeeds: '',
+    school: 'Uchqun School',
+    photo: null,
+  });
+  const [childPhotoPreview, setChildPhotoPreview] = useState(null);
   const { success, error: showError } = useToast();
   const { t } = useTranslation();
 
@@ -110,13 +120,10 @@ const ParentManagement = () => {
         disabilityType: '',
         specialNeeds: '',
         school: 'Uchqun School',
-        groupId: '',
-        photo: '',
-        emergencyContactName: '',
-        emergencyContactRelationship: 'Parent',
-        emergencyContactPhone: '',
+        photo: null,
       },
     });
+    setPhotoPreview(null);
     setShowModal(true);
   };
 
@@ -149,6 +156,84 @@ const ParentManagement = () => {
     }
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({
+        ...formData,
+        child: { ...formData.child, photo: file }
+      });
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleChildPhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setChildFormData({
+        ...childFormData,
+        photo: file
+      });
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setChildPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddChild = (parentId) => {
+    setSelectedParentId(parentId);
+    setChildFormData({
+      firstName: '',
+      lastName: '',
+      dateOfBirth: '',
+      gender: 'Male',
+      disabilityType: '',
+      specialNeeds: '',
+      school: 'Uchqun School',
+      photo: null,
+    });
+    setChildPhotoPreview(null);
+    setShowChildModal(true);
+  };
+
+  const handleSubmitChild = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedParentId) return;
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('parentId', selectedParentId);
+      formDataToSend.append('child[firstName]', childFormData.firstName);
+      formDataToSend.append('child[lastName]', childFormData.lastName);
+      formDataToSend.append('child[dateOfBirth]', childFormData.dateOfBirth);
+      formDataToSend.append('child[gender]', childFormData.gender);
+      formDataToSend.append('child[disabilityType]', childFormData.disabilityType);
+      if (childFormData.specialNeeds) formDataToSend.append('child[specialNeeds]', childFormData.specialNeeds);
+      formDataToSend.append('child[school]', childFormData.school);
+      if (childFormData.photo) {
+        formDataToSend.append('child[photo]', childFormData.photo);
+      }
+      
+      await api.post('/reception/children', formDataToSend);
+      success('Child added successfully');
+      setShowChildModal(false);
+      setChildPhotoPreview(null);
+      loadParents();
+    } catch (error) {
+      console.error('Error adding child:', error);
+      showError(error.response?.data?.error || 'Failed to add child');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -171,36 +256,38 @@ const ParentManagement = () => {
         
         success(t('parentsPage.toastUpdate'));
       } else {
-        const parentData = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          teacherId: formData.teacherId || null,
-          groupId: formData.groupId || null,
-          child: formData.child.firstName && formData.child.lastName ? {
-            firstName: formData.child.firstName,
-            lastName: formData.child.lastName,
-            dateOfBirth: formData.child.dateOfBirth,
-            gender: formData.child.gender,
-            disabilityType: formData.child.disabilityType,
-            specialNeeds: formData.child.specialNeeds || null,
-            photo: formData.child.photo || null,
-            school: formData.child.school,
-            groupId: formData.child.groupId || null,
-            emergencyContact: {
-              name: formData.child.emergencyContactName,
-              relationship: formData.child.emergencyContactRelationship,
-              phone: formData.child.emergencyContactPhone,
-            },
-          } : undefined,
-        };
-        await api.post('/reception/parents', parentData);
+        // Create FormData for file upload
+        const formDataToSend = new FormData();
+        formDataToSend.append('firstName', formData.firstName);
+        formDataToSend.append('lastName', formData.lastName);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('phone', formData.phone);
+        formDataToSend.append('password', formData.password);
+        if (formData.teacherId) formDataToSend.append('teacherId', formData.teacherId);
+        if (formData.groupId) formDataToSend.append('groupId', formData.groupId);
+        
+        // Add child data if provided
+        if (formData.child.firstName && formData.child.lastName) {
+          formDataToSend.append('child[firstName]', formData.child.firstName);
+          formDataToSend.append('child[lastName]', formData.child.lastName);
+          formDataToSend.append('child[dateOfBirth]', formData.child.dateOfBirth);
+          formDataToSend.append('child[gender]', formData.child.gender);
+          formDataToSend.append('child[disabilityType]', formData.child.disabilityType);
+          if (formData.child.specialNeeds) formDataToSend.append('child[specialNeeds]', formData.child.specialNeeds);
+          formDataToSend.append('child[school]', formData.child.school);
+          // Add photo file if selected
+          if (formData.child.photo) {
+            formDataToSend.append('child[photo]', formData.child.photo);
+          }
+        }
+        
+        // Axios automatically sets Content-Type for FormData, don't set it manually
+        await api.post('/reception/parents', formDataToSend);
         success(t('parentsPage.toastCreate'));
       }
       
       setShowModal(false);
+      setPhotoPreview(null);
       loadParents();
     } catch (error) {
       console.error('Error saving parent:', error);
@@ -357,6 +444,13 @@ const ParentManagement = () => {
               </div>
 
               <div className="flex gap-2 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => handleAddChild(parent.id)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 rounded-lg font-medium hover:bg-orange-100 transition-colors"
+                >
+                  <Baby className="w-4 h-4" />
+                  Add Child
+                </button>
                 <button
                   onClick={() => handleEdit(parent)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
@@ -626,106 +720,40 @@ const ParentManagement = () => {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          School <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.child.school}
-                          onChange={(e) => setFormData({ 
-                            ...formData, 
-                            child: { ...formData.child, school: e.target.value }
-                          })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Group <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          required
-                          value={formData.child.groupId}
-                          onChange={(e) => setFormData({ 
-                            ...formData, 
-                            child: { ...formData.child, groupId: e.target.value }
-                          })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        >
-                          <option value="">Select Group</option>
-                          {groups.map((group) => (
-                            <option key={group.id} value={group.id}>
-                              {group.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Photo URL</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        School <span className="text-red-500">*</span>
+                      </label>
                       <input
-                        type="url"
-                        value={formData.child.photo}
+                        type="text"
+                        required
+                        value={formData.child.school}
                         onChange={(e) => setFormData({ 
                           ...formData, 
-                          child: { ...formData.child, photo: e.target.value }
+                          child: { ...formData.child, school: e.target.value }
                         })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       />
                     </div>
 
-                    <div className="pt-4 border-t border-gray-200">
-                      <h4 className="text-md font-bold text-gray-900 mb-4">Emergency Contact</h4>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Contact Name <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={formData.child.emergencyContactName}
-                            onChange={(e) => setFormData({ 
-                              ...formData, 
-                              child: { ...formData.child, emergencyContactName: e.target.value }
-                            })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Relationship <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={formData.child.emergencyContactRelationship}
-                            onChange={(e) => setFormData({ 
-                              ...formData, 
-                              child: { ...formData.child, emergencyContactRelationship: e.target.value }
-                            })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Phone <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="tel"
-                            required
-                            value={formData.child.emergencyContactPhone}
-                            onChange={(e) => setFormData({ 
-                              ...formData, 
-                              child: { ...formData.child, emergencyContactPhone: e.target.value }
-                            })}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          />
-                        </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
+                      <div className="space-y-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        />
+                        {photoPreview && (
+                          <div className="mt-2">
+                            <img 
+                              src={photoPreview} 
+                              alt="Preview" 
+                              className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -746,6 +774,162 @@ const ParentManagement = () => {
                 >
                   <Save className="w-4 h-4" />
                   {editingParent ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Child Modal */}
+      {showChildModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Add Child</h2>
+              <button
+                onClick={() => {
+                  setShowChildModal(false);
+                  setChildPhotoPreview(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitChild} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={childFormData.firstName}
+                    onChange={(e) => setChildFormData({ ...childFormData, firstName: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={childFormData.lastName}
+                    onChange={(e) => setChildFormData({ ...childFormData, lastName: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date of Birth <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={childFormData.dateOfBirth}
+                    onChange={(e) => setChildFormData({ ...childFormData, dateOfBirth: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Gender <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={childFormData.gender}
+                    onChange={(e) => setChildFormData({ ...childFormData, gender: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Disability Type <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={childFormData.disabilityType}
+                  onChange={(e) => setChildFormData({ ...childFormData, disabilityType: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Special Needs</label>
+                <textarea
+                  value={childFormData.specialNeeds}
+                  onChange={(e) => setChildFormData({ ...childFormData, specialNeeds: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  School <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={childFormData.school}
+                  onChange={(e) => setChildFormData({ ...childFormData, school: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleChildPhotoChange}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  {childPhotoPreview && (
+                    <div className="mt-2">
+                      <img 
+                        src={childPhotoPreview} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowChildModal(false);
+                    setChildPhotoPreview(null);
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  Add Child
                 </button>
               </div>
             </form>

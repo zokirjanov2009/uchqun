@@ -69,11 +69,12 @@ const GroupManagement = () => {
 
   const handleEdit = (group) => {
     setEditingGroup(group);
+    const capacity = group.capacity && !isNaN(group.capacity) ? parseInt(group.capacity, 10) : 20;
     setFormData({
       name: group.name || '',
       description: group.description || '',
       teacherId: group.teacherId || group.teacherIds?.[0] || '',
-      capacity: group.capacity || 20,
+      capacity: capacity,
       ageRange: group.ageRange || '',
     });
     setShowModal(true);
@@ -274,8 +275,12 @@ const GroupManagement = () => {
                   <input
                     type="number"
                     required
-                    value={formData.capacity}
-                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
+                    min="1"
+                    value={formData.capacity || ''}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                      setFormData({ ...formData, capacity: isNaN(value) ? '' : value });
+                    }}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
