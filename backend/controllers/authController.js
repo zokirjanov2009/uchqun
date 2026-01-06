@@ -23,16 +23,20 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
+      logger.warn('Login attempt with missing credentials', { email: email ? 'provided' : 'missing' });
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ where: { email: normalizedEmail } });
     if (!user) {
+      logger.warn('Login attempt with non-existent email', { email: normalizedEmail });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
+      logger.warn('Login attempt with invalid password', { email: normalizedEmail, userId: user.id });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -49,6 +53,8 @@ export const login = async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(user.id);
+
+    logger.info('Successful login', { email: normalizedEmail, userId: user.id, role: user.role });
 
     res.json({
       success: true,
