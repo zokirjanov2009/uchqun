@@ -549,13 +549,11 @@ export const deleteMedia = async (req, res) => {
 
     // Delete file from storage
     try {
-      const filename = path.basename(media.url);
-      await deleteFile(filename);
+      await deleteFile(media.url);
       
       // Also delete thumbnail if it exists
       if (media.thumbnail && media.thumbnail !== media.url) {
-        const thumbFilename = path.basename(media.thumbnail);
-        await deleteFile(thumbFilename);
+        await deleteFile(media.thumbnail);
       }
     } catch (error) {
       logger.warn('Error deleting file from storage', { error: error.message, mediaId: id });

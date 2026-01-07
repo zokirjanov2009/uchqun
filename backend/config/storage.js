@@ -161,18 +161,35 @@ export async function deleteFile(filepath) {
     if (!appwriteStorage || !appwriteBucketId) {
       throw new Error('Appwrite storage not initialized');
     }
-    await appwriteStorage.deleteFile(appwriteBucketId, filepath);
+    let fileId = filepath;
+    // If a full Appwrite URL was provided, extract the file id from it
+    try {
+      if (fileId.startsWith('http')) {
+        const url = new URL(fileId);
+        // URL pattern: /storage/buckets/{bucketId}/files/{fileId}/view
+        const match = url.pathname.match(/\/files\/([^/]+)\//);
+        if (match && match[1]) {
+          fileId = match[1];
+        }
+      }
+    } catch {
+      // Ignore URL parsing errors and fall back to the provided value
+    }
+
+    await appwriteStorage.deleteFile(appwriteBucketId, fileId);
     return;
   }
 
   if (bucket && process.env.NODE_ENV === 'production') {
     // Delete from Google Cloud Storage
-    const blob = bucket.file(filepath);
+    const filename = getFilename(filepath);
+    const blob = bucket.file(filename);
     await blob.delete();
   } else {
     // Delete from local storage
     const uploadsDir = path.join(__dirname, '../uploads');
-    const fullPath = path.join(uploadsDir, path.basename(filepath));
+    const filename = getFilename(filepath);
+    const fullPath = path.join(uploadsDir, filename);
     
     if (fs.existsSync(fullPath)) {
       fs.unlinkSync(fullPath);
@@ -196,7 +213,7 @@ export async function getSignedUrl(filename, expiresIn = 3600) {
   }
 
   if (bucket && process.env.NODE_ENV === 'production') {
-    const blob = bucket.file(filename);
+    const blob = bucket.file(getFilename(filename));
     const [url] = await blob.getSignedUrl({
       action: 'read',
       expires: Date.now() + expiresIn * 1000,
@@ -216,4 +233,19 @@ async function streamToBuffer(stream) {
     stream.on('end', () => resolve(Buffer.concat(chunks)));
     stream.on('error', reject);
   });
+}
+
+function getFilename(filepath) {
+  if (!filepath) return '';
+  // If it's a URL, extract the last path segment
+  try {
+    if (filepath.startsWith('http')) {
+      const url = new URL(filepath);
+      const segments = url.pathname.split('/').filter(Boolean);
+      return segments[segments.length - 1] || '';
+    }
+  } catch {
+    // Fall through to basename handling
+  }
+  return path.basename(filepath);
 }
