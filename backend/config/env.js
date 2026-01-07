@@ -83,6 +83,12 @@ const envSchema = Joi.object({
   OPENAI_API_KEY: Joi.string().optional(),
   OPENAI_MODEL: Joi.string().default('gpt-3.5-turbo'),
   OPENAI_BASE_URL: Joi.string().uri().optional(), // For OpenRouter: https://openrouter.ai/api/v1
+
+  // Optional: Appwrite Storage Configuration
+  APPWRITE_ENDPOINT: Joi.string().uri().optional(),
+  APPWRITE_PROJECT_ID: Joi.string().optional(),
+  APPWRITE_API_KEY: Joi.string().optional(),
+  APPWRITE_BUCKET_ID: Joi.string().optional(),
 })
   .unknown() // Allow other environment variables
   .required();

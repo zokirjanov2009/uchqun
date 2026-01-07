@@ -2,12 +2,36 @@ import { Storage } from '@google-cloud/storage';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { Client as AppwriteClient, Storage as AppwriteStorage, ID } from 'node-appwrite';
+import { InputFile } from 'node-appwrite/file';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let storage;
 let bucket;
+let appwriteClient;
+let appwriteStorage;
+let appwriteBucketId;
+let appwriteProjectId;
+
+// Initialize Appwrite Storage if configured
+if (process.env.APPWRITE_ENDPOINT && process.env.APPWRITE_PROJECT_ID && process.env.APPWRITE_API_KEY && process.env.APPWRITE_BUCKET_ID) {
+  try {
+    appwriteClient = new AppwriteClient()
+      .setEndpoint(process.env.APPWRITE_ENDPOINT)
+      .setProject(process.env.APPWRITE_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
+
+    appwriteStorage = new AppwriteStorage(appwriteClient);
+    appwriteBucketId = process.env.APPWRITE_BUCKET_ID;
+    appwriteProjectId = process.env.APPWRITE_PROJECT_ID;
+    console.log('✓ Appwrite Storage initialized');
+  } catch (error) {
+    console.warn('⚠ Failed to initialize Appwrite Storage:', error.message);
+    console.warn('⚠ Falling back to other storage options');
+  }
+}
 
 // Initialize Google Cloud Storage if configured
 if (process.env.GCP_PROJECT_ID && process.env.GCS_BUCKET_NAME) {
@@ -33,6 +57,31 @@ if (process.env.GCP_PROJECT_ID && process.env.GCS_BUCKET_NAME) {
  * @returns {Promise<{url: string, path: string}>}
  */
 export async function uploadFile(file, filename, mimetype) {
+  // Prefer Appwrite if configured
+  if (appwriteStorage && appwriteBucketId) {
+    try {
+      const buffer = Buffer.isBuffer(file) ? file : await streamToBuffer(file);
+      const createdFile = await appwriteStorage.createFile(
+        appwriteBucketId,
+        ID.unique(),
+        InputFile.fromBuffer(buffer, filename),
+        {
+          contentType: mimetype,
+        }
+      );
+
+      const baseEndpoint = process.env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
+      const url = `${baseEndpoint}/storage/buckets/${appwriteBucketId}/files/${createdFile.$id}/view?project=${appwriteProjectId}`;
+
+      return {
+        url,
+        path: createdFile.$id,
+      };
+    } catch (error) {
+      console.warn('⚠ Appwrite upload failed, falling back to next storage option:', error.message);
+    }
+  }
+
   if (bucket && process.env.NODE_ENV === 'production') {
     // Upload to Google Cloud Storage
     const blob = bucket.file(filename);
@@ -103,6 +152,15 @@ export async function uploadFile(file, filename, mimetype) {
  * @returns {Promise<void>}
  */
 export async function deleteFile(filepath) {
+  if (appwriteStorage && appwriteBucketId) {
+    try {
+      await appwriteStorage.deleteFile(appwriteBucketId, filepath);
+      return;
+    } catch (error) {
+      console.warn('⚠ Appwrite delete failed, attempting fallback:', error.message);
+    }
+  }
+
   if (bucket && process.env.NODE_ENV === 'production') {
     // Delete from Google Cloud Storage
     const blob = bucket.file(filepath);
@@ -125,6 +183,11 @@ export async function deleteFile(filepath) {
  * @returns {Promise<string>}
  */
 export async function getSignedUrl(filename, expiresIn = 3600) {
+  if (appwriteStorage && appwriteBucketId) {
+    const baseEndpoint = process.env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
+    return `${baseEndpoint}/storage/buckets/${appwriteBucketId}/files/${filename}/view?project=${appwriteProjectId}`;
+  }
+
   if (bucket && process.env.NODE_ENV === 'production') {
     const blob = bucket.file(filename);
     const [url] = await blob.getSignedUrl({
@@ -139,5 +202,11 @@ export async function getSignedUrl(filename, expiresIn = 3600) {
   }
 }
 
-
-
+async function streamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
+}

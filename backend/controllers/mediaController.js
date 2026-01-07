@@ -315,11 +315,14 @@ export const uploadMedia = async (req, res) => {
       thumbnailUrl = await generateThumbnail(req.file.path, req.file.filename);
     }
 
-    // Delete local file after upload
-    try {
-      fs.unlinkSync(req.file.path);
-    } catch (e) {
-      logger.warn('Error deleting local file after upload', { error: e.message, path: req.file.path });
+    // Delete local file after upload only when using remote storage (e.g., GCS)
+    const shouldDeleteLocalFile = process.env.NODE_ENV === 'production' && process.env.GCS_BUCKET_NAME;
+    if (shouldDeleteLocalFile) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (e) {
+        logger.warn('Error deleting local file after upload', { error: e.message, path: req.file.path });
+      }
     }
 
     // Create media record
