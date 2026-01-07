@@ -14,9 +14,15 @@ let appwriteClient;
 let appwriteStorage;
 let appwriteBucketId;
 let appwriteProjectId;
+const appwriteConfigured = Boolean(
+  process.env.APPWRITE_ENDPOINT &&
+  process.env.APPWRITE_PROJECT_ID &&
+  process.env.APPWRITE_API_KEY &&
+  process.env.APPWRITE_BUCKET_ID
+);
 
 // Initialize Appwrite Storage if configured
-if (process.env.APPWRITE_ENDPOINT && process.env.APPWRITE_PROJECT_ID && process.env.APPWRITE_API_KEY && process.env.APPWRITE_BUCKET_ID) {
+if (appwriteConfigured) {
   try {
     appwriteClient = new AppwriteClient()
       .setEndpoint(process.env.APPWRITE_ENDPOINT)
@@ -58,28 +64,27 @@ if (process.env.GCP_PROJECT_ID && process.env.GCS_BUCKET_NAME) {
  */
 export async function uploadFile(file, filename, mimetype) {
   // Prefer Appwrite if configured
-  if (appwriteStorage && appwriteBucketId) {
-    try {
-      const buffer = Buffer.isBuffer(file) ? file : await streamToBuffer(file);
-      const createdFile = await appwriteStorage.createFile(
-        appwriteBucketId,
-        ID.unique(),
-        InputFile.fromBuffer(buffer, filename),
-        {
-          contentType: mimetype,
-        }
-      );
-
-      const baseEndpoint = process.env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
-      const url = `${baseEndpoint}/storage/buckets/${appwriteBucketId}/files/${createdFile.$id}/view?project=${appwriteProjectId}`;
-
-      return {
-        url,
-        path: createdFile.$id,
-      };
-    } catch (error) {
-      console.warn('⚠ Appwrite upload failed, falling back to next storage option:', error.message);
+  if (appwriteConfigured) {
+    if (!appwriteStorage || !appwriteBucketId) {
+      throw new Error('Appwrite storage not initialized');
     }
+    const buffer = Buffer.isBuffer(file) ? file : await streamToBuffer(file);
+    const createdFile = await appwriteStorage.createFile(
+      appwriteBucketId,
+      ID.unique(),
+      InputFile.fromBuffer(buffer, filename),
+      {
+        contentType: mimetype,
+      }
+    );
+
+    const baseEndpoint = process.env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
+    const url = `${baseEndpoint}/storage/buckets/${appwriteBucketId}/files/${createdFile.$id}/view?project=${appwriteProjectId}`;
+
+    return {
+      url,
+      path: createdFile.$id,
+    };
   }
 
   if (bucket && process.env.NODE_ENV === 'production') {
@@ -152,13 +157,12 @@ export async function uploadFile(file, filename, mimetype) {
  * @returns {Promise<void>}
  */
 export async function deleteFile(filepath) {
-  if (appwriteStorage && appwriteBucketId) {
-    try {
-      await appwriteStorage.deleteFile(appwriteBucketId, filepath);
-      return;
-    } catch (error) {
-      console.warn('⚠ Appwrite delete failed, attempting fallback:', error.message);
+  if (appwriteConfigured) {
+    if (!appwriteStorage || !appwriteBucketId) {
+      throw new Error('Appwrite storage not initialized');
     }
+    await appwriteStorage.deleteFile(appwriteBucketId, filepath);
+    return;
   }
 
   if (bucket && process.env.NODE_ENV === 'production') {
@@ -183,7 +187,10 @@ export async function deleteFile(filepath) {
  * @returns {Promise<string>}
  */
 export async function getSignedUrl(filename, expiresIn = 3600) {
-  if (appwriteStorage && appwriteBucketId) {
+  if (appwriteConfigured) {
+    if (!appwriteStorage || !appwriteBucketId) {
+      throw new Error('Appwrite storage not initialized');
+    }
     const baseEndpoint = process.env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
     return `${baseEndpoint}/storage/buckets/${appwriteBucketId}/files/${filename}/view?project=${appwriteProjectId}`;
   }
