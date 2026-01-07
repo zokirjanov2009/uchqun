@@ -394,22 +394,36 @@ export const getAIAdvice = async (req, res) => {
       message: message.trim(),
     };
 
-    // Try to use OpenAI API if available
+    // Try to use OpenAI/OpenRouter API if available
     let aiResponse;
     const hasOpenAIKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim().length > 0;
+    const isOpenRouter = process.env.OPENAI_BASE_URL && process.env.OPENAI_BASE_URL.includes('openrouter.ai');
     
     logger.info('AI chat request', {
       parentId: req.user.id,
       hasOpenAIKey,
+      isOpenRouter,
       messageLength: message.trim().length,
     });
     
     if (hasOpenAIKey) {
       try {
         const OpenAI = (await import('openai')).default;
-        const openai = new OpenAI({
+        const openaiConfig = {
           apiKey: process.env.OPENAI_API_KEY,
-        });
+        };
+        
+        // If OpenRouter base URL is provided, use it
+        if (isOpenRouter) {
+          openaiConfig.baseURL = process.env.OPENAI_BASE_URL;
+          // OpenRouter requires HTTP headers
+          openaiConfig.defaultHeaders = {
+            'HTTP-Referer': process.env.FRONTEND_URL?.split(',')[0] || 'https://uchqun-production.up.railway.app',
+            'X-Title': 'Uchqun Parent Portal',
+          };
+        }
+        
+        const openai = new OpenAI(openaiConfig);
 
         const systemPrompt = `You are a helpful AI assistant specialized in providing advice to parents of children with special needs and disabilities. 
 You provide practical, empathetic, and evidence-based advice about:
@@ -439,8 +453,17 @@ Parent's Question: ${context.message}
 
 Please provide helpful, practical advice about caring for children with special needs.`;
 
+        // Determine model to use
+        let modelToUse = process.env.OPENAI_MODEL;
+        
+        // If using OpenRouter and no specific model set, use a free model
+        if (isOpenRouter && !modelToUse) {
+          // Try free models available on OpenRouter
+          modelToUse = 'qwen/qwen-2.5-7b-instruct:free';
+        }
+
         const completion = await openai.chat.completions.create({
-          model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+          model: modelToUse,
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
@@ -455,15 +478,77 @@ Please provide helpful, practical advice about caring for children with special 
           parentId: req.user.id,
           messageLength: context.message.length,
           responseLength: aiResponse.length,
+          model: modelToUse,
         });
       } catch (openaiError) {
         logger.error('OpenAI API error', { 
           error: openaiError.message,
           stack: openaiError.stack,
           parentId: req.user.id,
+          isOpenRouter,
         });
-        // Fallback to rule-based response
-        aiResponse = generateFallbackResponse(context);
+        
+        // If OpenRouter and insufficient credits or model not found, try free models
+        if (isOpenRouter && (openaiError.message.includes('402') || openaiError.message.includes('404') || openaiError.message.includes('credits'))) {
+          // List of free models to try (in order of preference)
+          const freeModels = [
+            'qwen/qwen-2.5-7b-instruct:free',
+            'deepseek/deepseek-r1-0528:free',
+            'meta-llama/llama-3.2-3b-instruct:free',
+            'google/gemini-flash-1.5',
+          ];
+          
+          let freeModelSuccess = false;
+          
+          for (const freeModel of freeModels) {
+            try {
+              logger.info(`Trying free OpenRouter model: ${freeModel}`);
+              const OpenAI = (await import('openai')).default;
+              const openaiFree = new OpenAI({
+                apiKey: process.env.OPENAI_API_KEY,
+                baseURL: process.env.OPENAI_BASE_URL,
+                defaultHeaders: {
+                  'HTTP-Referer': process.env.FRONTEND_URL?.split(',')[0] || 'https://uchqun-production.up.railway.app',
+                  'X-Title': 'Uchqun Parent Portal',
+                },
+              });
+
+              const freeCompletion = await openaiFree.chat.completions.create({
+                model: freeModel,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: userPrompt },
+                ],
+                temperature: 0.7,
+                max_tokens: 500,
+              });
+
+              aiResponse = freeCompletion.choices[0]?.message?.content || 'I apologize, but I could not generate a response. Please try again.';
+              freeModelSuccess = true;
+              
+              logger.info('Free OpenRouter model response generated successfully', {
+                parentId: req.user.id,
+                responseLength: aiResponse.length,
+                model: freeModel,
+              });
+              break; // Success, exit loop
+            } catch (freeModelError) {
+              logger.warn(`Free model ${freeModel} failed, trying next`, { 
+                error: freeModelError.message,
+              });
+              // Continue to next model
+            }
+          }
+          
+          if (!freeModelSuccess) {
+            logger.error('All free OpenRouter models failed, using fallback');
+            // Fallback to rule-based response
+            aiResponse = generateFallbackResponse(context);
+          }
+        } else {
+          // Fallback to rule-based response
+          aiResponse = generateFallbackResponse(context);
+        }
       }
     } else {
       // Fallback to rule-based response if OpenAI is not configured

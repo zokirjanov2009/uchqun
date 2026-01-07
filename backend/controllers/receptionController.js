@@ -223,7 +223,7 @@ export const createParent = async (req, res) => {
         bodyKeys: Object.keys(req.body),
       });
       return res.status(400).json({ 
-        error: 'Email, password, first name, and last name are required'
+        error: 'Email, password, first name, and last name are required' 
       });
     }
 

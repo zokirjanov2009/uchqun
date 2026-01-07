@@ -79,9 +79,10 @@ const envSchema = Joi.object({
   // Optional: Sentry Configuration
   SENTRY_DSN: Joi.string().uri().optional(),
 
-  // Optional: OpenAI Configuration (for AI features)
+  // Optional: OpenAI/OpenRouter Configuration (for AI features)
   OPENAI_API_KEY: Joi.string().optional(),
   OPENAI_MODEL: Joi.string().default('gpt-3.5-turbo'),
+  OPENAI_BASE_URL: Joi.string().uri().optional(), // For OpenRouter: https://openrouter.ai/api/v1
 })
   .unknown() // Allow other environment variables
   .required();
