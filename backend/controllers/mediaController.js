@@ -315,8 +315,17 @@ export const uploadMedia = async (req, res) => {
       thumbnailUrl = await generateThumbnail(req.file.path, req.file.filename);
     }
 
-    // Delete local file after upload only when using remote storage (e.g., GCS)
-    const shouldDeleteLocalFile = process.env.NODE_ENV === 'production' && process.env.GCS_BUCKET_NAME;
+    const usingAppwrite = Boolean(
+      process.env.APPWRITE_ENDPOINT &&
+      process.env.APPWRITE_PROJECT_ID &&
+      process.env.APPWRITE_API_KEY &&
+      process.env.APPWRITE_BUCKET_ID
+    );
+    const usingGcs = process.env.NODE_ENV === 'production' && process.env.GCS_BUCKET_NAME;
+    const usingRemoteStorage = usingAppwrite || usingGcs;
+
+    // Delete local temp file only when using remote storage (Appwrite or GCS)
+    const shouldDeleteLocalFile = usingRemoteStorage;
     if (shouldDeleteLocalFile) {
       try {
         fs.unlinkSync(req.file.path);
