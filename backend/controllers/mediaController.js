@@ -235,6 +235,20 @@ async function generateThumbnail(filePath, filename) {
 // Upload media file (teachers only)
 export const uploadMedia = async (req, res) => {
   try {
+    const appwriteConfigured = Boolean(
+      process.env.APPWRITE_ENDPOINT &&
+      process.env.APPWRITE_PROJECT_ID &&
+      process.env.APPWRITE_API_KEY &&
+      process.env.APPWRITE_BUCKET_ID
+    );
+
+    if (!appwriteConfigured) {
+      return res.status(503).json({
+        error: 'Storage not configured',
+        message: 'Appwrite storage is required for media uploads. Please configure APPWRITE_* variables.',
+      });
+    }
+
     if (req.user.role !== 'teacher' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Only teachers can upload media' });
     }
