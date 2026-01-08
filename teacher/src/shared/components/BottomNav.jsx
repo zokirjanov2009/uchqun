@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Home, Image as ImageIcon, LogOut } from 'lucide-react';
+import { Calendar, Home, Image as ImageIcon, LogOut, Users, Utensils } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -16,7 +16,9 @@ const BottomNav = () => {
 
   const navigation = [
     { name: t('nav.dashboard'), href: '/teacher', icon: Home },
+    { name: t('nav.parents'), href: '/teacher/parents', icon: Users },
     { name: t('nav.activities'), href: '/teacher/activities', icon: Calendar },
+    { name: t('nav.meals'), href: '/teacher/meals', icon: Utensils },
     { name: t('nav.media'), href: '/teacher/media', icon: ImageIcon },
   ];
 
