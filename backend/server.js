@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { syncDatabase } from './models/index.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
@@ -39,6 +41,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Security middleware (should be first)
 app.use(securityHeaders);
@@ -119,6 +122,9 @@ app.use(requestLogger);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve local uploads when remote storage isn't configured
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check routes (before API routes, no rate limiting)
 app.use('/health', healthRoutes);

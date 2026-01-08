@@ -1,5 +1,6 @@
 import { Storage } from '@google-cloud/storage';
 import path from 'path';
+import fs from 'fs';
 import { Client as AppwriteClient, Storage as AppwriteStorage, ID } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 
@@ -9,6 +10,17 @@ let appwriteClient;
 let appwriteStorage;
 let appwriteBucketId;
 let appwriteProjectId;
+const localUploadsRoot = process.env.LOCAL_UPLOADS_DIR || path.join(process.cwd(), 'uploads');
+const localMediaDir = path.join(localUploadsRoot, 'media');
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+// Always ensure local folders exist for fallback/local dev usage
+ensureDir(localMediaDir);
 const appwriteConfigured = Boolean(
   process.env.APPWRITE_ENDPOINT &&
   process.env.APPWRITE_PROJECT_ID &&
@@ -116,7 +128,19 @@ export async function uploadFile(file, filename, mimetype) {
     });
   }
 
-  throw new Error('No storage configured. Please set Appwrite or GCS credentials.');
+  // Local disk fallback (development/unstaged environments)
+  const buffer = Buffer.isBuffer(file) ? file : await streamToBuffer(file);
+  const safeName = filename || `upload-${Date.now()}`;
+  const destination = path.join(localMediaDir, safeName);
+  await fs.promises.writeFile(destination, buffer);
+
+  // URL is served statically from Express (/uploads)
+  const urlPath = `/uploads/media/${safeName}`;
+
+  return {
+    url: urlPath,
+    path: destination,
+  };
 }
 
 /**
@@ -156,7 +180,15 @@ export async function deleteFile(filepath) {
     return;
   }
 
-  throw new Error('No storage configured. Please set Appwrite or GCS credentials.');
+  // Local fallback deletion
+  try {
+    const localPath = filepath.startsWith('/uploads')
+      ? path.join(process.cwd(), filepath.replace('/uploads', 'uploads'))
+      : filepath;
+    await fs.promises.unlink(localPath);
+  } catch {
+    // Ignore if already deleted or path invalid
+  }
 }
 
 /**
