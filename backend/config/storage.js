@@ -10,6 +10,7 @@ let appwriteClient;
 let appwriteStorage;
 let appwriteBucketId;
 let appwriteProjectId;
+const fileBaseUrl = (process.env.FILE_BASE_URL || process.env.PUBLIC_API_URL || '').replace(/\/+$/, '');
 const localUploadsRoot = process.env.LOCAL_UPLOADS_DIR || path.join(process.cwd(), 'uploads');
 const localMediaDir = path.join(localUploadsRoot, 'media');
 
@@ -145,9 +146,10 @@ export async function uploadFile(file, filename, mimetype) {
 
   // URL is served statically from Express (/uploads)
   const urlPath = `/uploads/media/${safeName}`;
+  const absoluteUrl = fileBaseUrl ? `${fileBaseUrl}${urlPath}` : urlPath;
 
   return {
-    url: urlPath,
+    url: absoluteUrl,
     path: destination,
   };
 }
@@ -191,9 +193,18 @@ export async function deleteFile(filepath) {
 
   // Local fallback deletion
   try {
-    const localPath = filepath.startsWith('/uploads')
-      ? path.join(process.cwd(), filepath.replace('/uploads', 'uploads'))
-      : filepath;
+    let localPath = filepath;
+    if (filepath.startsWith('http')) {
+      try {
+        const urlObj = new URL(filepath);
+        localPath = urlObj.pathname.replace('/uploads', 'uploads');
+      } catch {
+        // fallback to raw filepath
+      }
+    }
+    if (localPath.startsWith('/uploads')) {
+      localPath = path.join(process.cwd(), localPath.replace('/uploads', 'uploads'));
+    }
     await fs.promises.unlink(localPath);
   } catch {
     // Ignore if already deleted or path invalid
