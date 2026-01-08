@@ -17,6 +17,7 @@ import ChildProfile from './parent/pages/ChildProfile';
 import ParentActivities from './parent/pages/Activities';
 import ParentMeals from './parent/pages/Meals';
 import ParentMedia from './parent/pages/Media';
+import ParentChat from './parent/pages/Chat';
 import Notifications from './parent/pages/Notifications';
 import Help from './parent/pages/Help';
 import AIChat from './parent/pages/AIChat';
@@ -46,6 +47,7 @@ function App() {
                 <Route path="meals" element={<ParentMeals />} />
                 <Route path="media" element={<ParentMedia />} />
                 <Route path="ai-chat" element={<AIChat />} />
+                <Route path="chat" element={<ParentChat />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="help" element={<Help />} />
               </Route>

@@ -6,6 +6,8 @@
     "meals": "Meals",
     "profile": "Profile",
     "aiChat": "AI Assistant",
+    "chat": "Chat",
+    "rating": "Feedback",
     "exit": "Exit",
     "menu": "Main menu"
   },
@@ -99,6 +101,15 @@
     "footer": "AI responses are for informational purposes only. Always consult with healthcare professionals for medical advice.",
     "errorMessage": "I apologize, but I encountered an error. Please try again in a moment.",
     "errorToast": "Failed to get AI response. Please try again."
+  },
+  "chat": {
+    "title": "Chat with Teacher",
+    "subtitle": "Send a message to your child's teacher",
+    "placeholder": "Write a message to the teacher...",
+    "send": "Send",
+    "empty": "No messages yet",
+    "you": "You",
+    "teacher": "Teacher"
   },
   "language": "Language"
 }

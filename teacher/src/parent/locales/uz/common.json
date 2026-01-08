@@ -6,6 +6,8 @@
     "meals": "Ovqatlar",
     "profile": "Profil",
     "aiChat": "AI Yordamchi",
+    "chat": "Chat",
+    "rating": "Fikr bildirish",
     "exit": "Chiqish",
     "menu": "Asosiy menyu"
   },
@@ -99,6 +101,15 @@
     "footer": "AI javoblar faqat ma'lumot uchun. Tibbiy maslahat uchun har doim tibbiyot mutaxassislari bilan maslahatlashing.",
     "errorMessage": "Kechirasiz, lekin xatolik yuz berdi. Iltimos, biroz vaqt o'tgach qayta urinib ko'ring.",
     "errorToast": "AI javob olishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring."
+  },
+  "chat": {
+    "title": "O‘qituvchi bilan chat",
+    "subtitle": "Farzandingiz o‘qituvchisiga xabar yuboring",
+    "placeholder": "O‘qituvchiga xabar yozing...",
+    "send": "Yuborish",
+    "empty": "Hozircha xabarlar yo‘q",
+    "you": "Siz",
+    "teacher": "O‘qituvchi"
   },
   "language": "Til"
 }

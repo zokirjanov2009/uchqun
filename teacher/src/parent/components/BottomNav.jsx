@@ -10,7 +10,7 @@ const BottomNav = () => {
     { name: t('nav.activities'), href: '/activities', icon: Calendar },
     { name: t('nav.media'), href: '/media', icon: ImageIcon },
     { name: t('nav.meals'), href: '/meals', icon: CookingPot },
-    { name: t('nav.aiChat'), href: '/ai-chat', icon: Bot },
+    { name: t('nav.chat'), href: '/chat', icon: Bot },
   ];
 
   const isActive = (path) => {

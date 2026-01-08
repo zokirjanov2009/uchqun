@@ -56,18 +56,18 @@ const TopBar = ({ onMenuClick }) => {
         <Link
           to="/help"
           className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
-          aria-label={t('nav.rating') || 'Rating'}
-          title={t('nav.rating') || 'Rating'}
+          aria-label={t('nav.rating')}
+          title={t('nav.rating')}
         >
           <Star className="w-6 h-6" />
         </Link>
 
-        {/* Chat with teacher (reuse AI/chat page) */}
+        {/* Chat with teacher */}
         <Link
-          to="/ai-chat"
+          to="/chat"
           className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
-          aria-label={t('nav.chat') || 'Chat'}
-          title={t('nav.chat') || 'Chat'}
+          aria-label={t('nav.chat')}
+          title={t('nav.chat')}
         >
           <MessageCircle className="w-6 h-6" />
         </Link>
