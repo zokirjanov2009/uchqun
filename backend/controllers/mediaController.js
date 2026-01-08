@@ -331,12 +331,9 @@ export const uploadMedia = async (req, res) => {
       }
     }
 
-    // Upload file to Appwrite storage
+    // Upload file to Appwrite storage (single URL persisted)
     const fileBuffer = fs.readFileSync(req.file.path);
     const uploadResult = await uploadFile(fileBuffer, req.file.filename, req.file.mimetype);
-
-    // We now store only the main image URL; thumbnails are not persisted
-    const thumbnailUrl = null;
 
     const usingAppwrite = Boolean(
       process.env.APPWRITE_ENDPOINT &&
@@ -362,8 +359,8 @@ export const uploadMedia = async (req, res) => {
       childId,
       activityId: activityId || null,
       type: mediaType,
-      url: uploadResult.url,     // store only the Appwrite file URL
-      thumbnail: thumbnailUrl,   // no thumbnails persisted
+      url: uploadResult.url,   // store only the Appwrite file URL
+      thumbnail: null,         // no thumbnails persisted
       title,
       description: description || '',
       date: date || new Date().toISOString().split('T')[0],
