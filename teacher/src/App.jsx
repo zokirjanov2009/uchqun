@@ -11,6 +11,7 @@ import ParentManagement from './pages/ParentManagement';
 import Activities from './pages/Activities';
 import Meals from './pages/Meals';
 import Media from './pages/Media';
+import Chat from './pages/Chat';
 import ParentApp from './parent/ParentApp';
 import ParentDashboard from './parent/pages/Dashboard';
 import ChildProfile from './parent/pages/ChildProfile';
@@ -66,6 +67,7 @@ function App() {
                 <Route path="activities" element={<Activities />} />
                 <Route path="meals" element={<Meals />} />
                 <Route path="media" element={<Media />} />
+                <Route path="chat" element={<Chat />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
