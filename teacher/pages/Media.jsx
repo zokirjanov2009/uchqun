@@ -34,7 +34,6 @@ const Media = () => {
     description: '',
     type: 'photo',
     url: '',
-    thumbnail: '',
     date: new Date().toISOString().split('T')[0],
   });
   const [children, setChildren] = useState([]);
@@ -86,7 +85,6 @@ const Media = () => {
       description: '',
       type: 'photo',
       url: '',
-      thumbnail: '',
       date: new Date().toISOString().split('T')[0],
     });
     setShowModal(true);
@@ -101,7 +99,6 @@ const Media = () => {
       description: mediaItem.description || '',
       type: mediaItem.type || 'photo',
       url: mediaItem.url || '',
-      thumbnail: mediaItem.thumbnail || mediaItem.url || '',
       date: mediaItem.date ? mediaItem.date.split('T')[0] : new Date().toISOString().split('T')[0],
     });
     setShowModal(true);
@@ -208,7 +205,7 @@ const Media = () => {
               {/* Image Container */}
               <div className="relative aspect-[4/5] overflow-hidden">
                 <img
-                  src={item.thumbnail || item.url}
+                  src={item.url}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -457,19 +454,6 @@ const Media = () => {
                   value={formData.url}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Thumbnail URL (optional, defaults to media URL)
-                </label>
-                <input
-                  type="url"
-                  value={formData.thumbnail}
-                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                  placeholder="https://example.com/thumbnail.jpg"
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
