@@ -29,3 +29,17 @@ export function addMessage(author, text) {
   return updated;
 }
 
+export function updateMessage(id, text) {
+  const current = loadMessages();
+  const updated = current.map((m) => (m.id === id ? { ...m, text } : m));
+  persist(updated);
+  return updated;
+}
+
+export function deleteMessage(id) {
+  const current = loadMessages();
+  const updated = current.filter((m) => m.id !== id);
+  persist(updated);
+  return updated;
+}
+

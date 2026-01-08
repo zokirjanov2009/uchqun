@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Edit2, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { loadMessages, addMessage } from '../shared/services/chatStore';
+import { loadMessages, addMessage, updateMessage, deleteMessage } from '../shared/services/chatStore';
 
 const Chat = () => {
   const { t } = useTranslation();
   const [messages, setMessages] = useState(() => loadMessages());
   const [input, setInput] = useState('');
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     setMessages(loadMessages());
@@ -20,9 +21,26 @@ const Chat = () => {
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    const updated = addMessage('teacher', trimmed);
+    const updated = editingId
+      ? updateMessage(editingId, trimmed)
+      : addMessage('teacher', trimmed);
     setMessages(updated);
     setInput('');
+    setEditingId(null);
+  };
+
+  const handleEdit = (msg) => {
+    setEditingId(msg.id);
+    setInput(msg.text);
+  };
+
+  const handleDelete = (id) => {
+    const updated = deleteMessage(id);
+    setMessages(updated);
+    if (editingId === id) {
+      setEditingId(null);
+      setInput('');
+    }
   };
 
   return (
@@ -61,7 +79,25 @@ const Chat = () => {
                   <div className="text-xs font-semibold mb-1">
                     {msg.author === 'teacher' ? t('chat.you') : t('chat.parent') || t('chat.teacher')}
                   </div>
-                  <div>{msg.text}</div>
+                  <div className="whitespace-pre-wrap break-words">{msg.text}</div>
+                  {isYou && (
+                    <div className="flex justify-end gap-2 mt-2 text-xs text-gray-500">
+                      <button
+                        onClick={() => handleEdit(msg)}
+                        className="flex items-center gap-1 hover:text-orange-600"
+                        type="button"
+                      >
+                        <Edit2 className="w-3 h-3" /> {t('chat.edit') || 'Edit'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(msg.id)}
+                        className="flex items-center gap-1 hover:text-red-600"
+                        type="button"
+                      >
+                        <Trash2 className="w-3 h-3" /> {t('chat.delete') || 'Delete'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -96,4 +132,5 @@ const Chat = () => {
 };
 
 export default Chat;
+
 
