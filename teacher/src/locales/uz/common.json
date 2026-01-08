@@ -6,6 +6,7 @@
     "activities": "Mashg'ulotlar",
     "meals": "Taomlar",
     "media": "Media",
+    "chat": "Chat",
     "logout": "Chiqish",
     "menu": "Menyu"
   },
@@ -175,6 +176,16 @@
     "toastError": "Mediani saqlashda xatolik",
     "toastLoadError": "MedianI yuklashda xatolik",
     "toastChildrenEmpty": "Bolalar topilmadi. Avval bola ma'lumotlari bilan ota-ona yarating."
+  },
+  "chat": {
+    "title": "Ota-ona bilan chat",
+    "subtitle": "Ota-onalar bilan xabar almashing",
+    "placeholder": "Xabar yozing...",
+    "send": "Yuborish",
+    "empty": "Hozircha xabarlar yo'q",
+    "you": "Siz",
+    "parent": "Ota-ona",
+    "teacher": "O'qituvchi"
   }
 }
 

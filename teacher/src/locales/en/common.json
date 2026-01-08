@@ -6,6 +6,7 @@
     "activities": "Activities",
     "meals": "Meals",
     "media": "Media",
+    "chat": "Chat",
     "logout": "Logout",
     "menu": "Menu"
   },
@@ -175,6 +176,16 @@
     "toastError": "Error saving media",
     "toastLoadError": "Error loading media",
     "toastChildrenEmpty": "No children found. Please create a parent account with child information first."
+  },
+  "chat": {
+    "title": "Chat with Parent",
+    "subtitle": "Exchange messages with parents",
+    "placeholder": "Write a message...",
+    "send": "Send",
+    "empty": "No messages yet",
+    "you": "You",
+    "parent": "Parent",
+    "teacher": "Teacher"
   }
 }
 

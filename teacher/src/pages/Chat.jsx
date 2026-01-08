@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { loadMessages, addMessage } from '../../shared/services/chatStore';
+import { loadMessages, addMessage } from '../shared/services/chatStore';
 
 const Chat = () => {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ const Chat = () => {
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    const updated = addMessage('parent', trimmed);
+    const updated = addMessage('teacher', trimmed);
     setMessages(updated);
     setInput('');
   };
@@ -45,7 +45,7 @@ const Chat = () => {
             </div>
           )}
           {sorted.map((msg) => {
-            const isYou = msg.author === 'you';
+            const isYou = msg.author === 'teacher';
             return (
               <div
                 key={msg.id}
@@ -59,7 +59,7 @@ const Chat = () => {
                   }`}
                 >
                   <div className="text-xs font-semibold mb-1">
-                    {msg.author === 'parent' ? t('chat.you') : t('chat.teacher')}
+                    {msg.author === 'teacher' ? t('chat.you') : t('chat.parent') || t('chat.teacher')}
                   </div>
                   <div>{msg.text}</div>
                 </div>

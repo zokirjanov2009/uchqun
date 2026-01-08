@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Home, Image as ImageIcon, LogOut, Users, Utensils } from 'lucide-react';
+import { Calendar, Home, Image as ImageIcon, LogOut, Users, Utensils, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ const BottomNav = () => {
     { name: t('nav.activities'), href: '/teacher/activities', icon: Calendar },
     { name: t('nav.meals'), href: '/teacher/meals', icon: Utensils },
     { name: t('nav.media'), href: '/teacher/media', icon: ImageIcon },
+    { name: t('nav.chat'), href: '/teacher/chat', icon: MessageCircle },
   ];
 
   const isActive = (path) => {

@@ -22,6 +22,7 @@ const Sidebar = ({ onClose }) => {
     { name: t('nav.activities'), href: '/teacher/activities', icon: ClipboardList },
     { name: t('nav.meals'), href: '/teacher/meals', icon: Utensils },
     { name: t('nav.media'), href: '/teacher/media', icon: ImageIcon },
+    { name: t('nav.chat'), href: '/teacher/chat', icon: Plus },
   ];
 
   const isActive = (path) => {
