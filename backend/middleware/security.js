@@ -15,6 +15,8 @@ export const securityHeaders = helmet({
       frameSrc: ["'none'"],
     },
   },
+  // Allow cross-origin fetch of static uploads (images/videos)
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
   crossOriginEmbedderPolicy: false, // Allow embedding if needed
   hsts: {
     maxAge: 31536000,
