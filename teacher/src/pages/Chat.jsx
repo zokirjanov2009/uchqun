@@ -10,7 +10,6 @@ const Chat = () => {
   const [selectedParent, setSelectedParent] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     const fetchParents = async () => {
@@ -39,7 +38,10 @@ const Chat = () => {
   }, [selectedParent]);
 
   const sorted = useMemo(
-    () => [...messages].sort((a, b) => new Date(a.time) - new Date(b.time)),
+    () =>
+      [...messages].sort(
+        (a, b) => new Date(a.createdAt || a.time) - new Date(b.createdAt || b.time)
+      ),
     [messages]
   );
 
@@ -94,7 +96,7 @@ const Chat = () => {
             </div>
           )}
           {sorted.map((msg) => {
-            const isYou = msg.author === 'teacher';
+            const isYou = msg.senderRole === 'teacher';
             return (
               <div
                 key={msg.id}
@@ -108,27 +110,9 @@ const Chat = () => {
                   }`}
                 >
                   <div className="text-xs font-semibold mb-1">
-                    {msg.author === 'teacher' ? t('chat.you') : t('chat.parent') || t('chat.teacher')}
+                    {isYou ? t('chat.you') : t('chat.parent')}
                   </div>
-                  <div className="whitespace-pre-wrap break-words">{msg.text}</div>
-                  {isYou && (
-                    <div className="flex justify-end gap-2 mt-2 text-xs text-gray-500">
-                      <button
-                        onClick={() => handleEdit(msg)}
-                        className="flex items-center gap-1 hover:text-orange-600"
-                        type="button"
-                      >
-                        <Edit2 className="w-3 h-3" /> {t('chat.edit') || 'Edit'}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(msg.id)}
-                        className="flex items-center gap-1 hover:text-red-600"
-                        type="button"
-                      >
-                        <Trash2 className="w-3 h-3" /> {t('chat.delete') || 'Delete'}
-                      </button>
-                    </div>
-                  )}
+                  <div className="whitespace-pre-wrap break-words">{msg.content || msg.text}</div>
                 </div>
               </div>
             );
