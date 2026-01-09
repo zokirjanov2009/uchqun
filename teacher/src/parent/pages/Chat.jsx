@@ -22,7 +22,10 @@ const Chat = () => {
   }, [conversationId]);
 
   const sorted = useMemo(
-    () => [...messages].sort((a, b) => new Date(a.time) - new Date(b.time)),
+    () =>
+      [...messages].sort(
+        (a, b) => new Date(a.createdAt || a.time) - new Date(b.createdAt || b.time)
+      ),
     [messages]
   );
 
@@ -56,7 +59,7 @@ const Chat = () => {
             </div>
           )}
           {sorted.map((msg) => {
-            const isYou = msg.author === 'parent';
+            const isYou = msg.senderRole === 'parent';
             return (
               <div
                 key={msg.id}
@@ -70,9 +73,9 @@ const Chat = () => {
                   }`}
                 >
                   <div className="text-xs font-semibold mb-1">
-                    {msg.author === 'parent' ? t('chat.you') : t('chat.teacher')}
+                    {isYou ? t('chat.you') : t('chat.teacher')}
                   </div>
-                  <div className="whitespace-pre-wrap break-words">{msg.text}</div>
+                  <div className="whitespace-pre-wrap break-words">{msg.content || msg.text}</div>
                 </div>
               </div>
             );
