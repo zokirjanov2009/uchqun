@@ -1,10 +1,12 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BottomNav from '../shared/components/BottomNav';
 import LanguageSwitcher from './LanguageSwitcher';
 import { MessageCircle } from 'lucide-react';
 
 const Layout = () => {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Language switcher fixed top-right */}
@@ -37,15 +39,17 @@ const Layout = () => {
       </div>
 
       {/* Floating chat button for mobile */}
-      <div className="lg:hidden fixed bottom-20 right-4 z-40">
-        <a
-          href="/teacher/chat"
-          className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg hover:bg-orange-600 transition"
-          aria-label="Chat"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </a>
-      </div>
+      {location.pathname !== '/teacher/chat' && (
+        <div className="lg:hidden fixed bottom-20 right-4 z-40">
+          <a
+            href="/teacher/chat"
+            className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg hover:bg-orange-600 transition"
+            aria-label="Chat"
+          >
+            <MessageCircle className="w-6 h-6" />
+          </a>
+        </div>
+      )}
     </div>
   );
 };
