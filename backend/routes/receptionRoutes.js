@@ -14,6 +14,7 @@ import {
   deleteTeacher,
   deleteParent,
   createChildForParent,
+  getTeacherRatings,
 } from '../controllers/receptionController.js';
 import { getGroups } from '../controllers/groupController.js';
 
@@ -41,6 +42,7 @@ router.get('/verification-status', getVerificationStatus);
 // Teacher management
 router.post('/teachers', createTeacher);
 router.get('/teachers', getTeachers);
+router.get('/teachers/:id/ratings', getTeacherRatings);
 router.put('/teachers/:id', updateTeacher);
 router.delete('/teachers/:id', deleteTeacher);
 

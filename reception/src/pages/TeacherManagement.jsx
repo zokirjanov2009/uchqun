@@ -3,16 +3,18 @@ import api from '../services/api';
 import Card from '../components/Card';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useToast } from '../context/ToastContext';
-import { 
-  UserCheck, 
-  Plus, 
-  Edit2, 
-  Trash2, 
+import {
+  UserCheck,
+  Plus,
+  Edit2,
+  Trash2,
   Search,
   Mail,
   Phone,
   X,
-  Save
+  Save,
+  Star,
+  MessageSquare,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +24,13 @@ const TeacherManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
+  const [showRatings, setShowRatings] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [ratingData, setRatingData] = useState({
+    summary: { average: 0, count: 0 },
+    ratings: [],
+  });
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -72,6 +81,37 @@ const TeacherManagement = () => {
       password: '', // Don't pre-fill password
     });
     setShowModal(true);
+  };
+
+  const handleViewRatings = async (teacher) => {
+    setSelectedTeacher(teacher);
+    setShowRatings(true);
+    setRatingsLoading(true);
+    try {
+      const response = await api.get(`/reception/teachers/${teacher.id}/ratings`);
+      const data = response.data?.data || {};
+      setRatingData({
+        summary: data.summary || { average: 0, count: 0 },
+        ratings: Array.isArray(data.ratings) ? data.ratings : [],
+      });
+    } catch (err) {
+      console.error('Error loading ratings:', err);
+      showError(err.response?.data?.error || t('teachersPage.ratings.toastError'));
+      setRatingData({ summary: { average: 0, count: 0 }, ratings: [] });
+    } finally {
+      setRatingsLoading(false);
+    }
+  };
+
+  const closeRatings = () => {
+    setShowRatings(false);
+    setSelectedTeacher(null);
+    setRatingData({ summary: { average: 0, count: 0 }, ratings: [] });
+  };
+
+  const formatDate = (value) => {
+    if (!value) return '';
+    return new Date(value).toLocaleString();
   };
 
   const handleDelete = async (teacherId) => {
@@ -179,7 +219,11 @@ const TeacherManagement = () => {
       {filteredTeachers.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTeachers.map((teacher) => (
-            <Card key={teacher.id} className="p-6 hover:shadow-lg transition-shadow">
+            <Card
+              key={teacher.id}
+              className="p-6 hover:shadow-lg transition-shadow"
+              onClick={() => handleViewRatings(teacher)}
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
@@ -209,14 +253,20 @@ const TeacherManagement = () => {
 
               <div className="flex gap-2 pt-4 border-t border-gray-100">
                 <button
-                  onClick={() => handleEdit(teacher)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(teacher);
+                  }}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(teacher.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(teacher.id);
+                  }}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -242,6 +292,90 @@ const TeacherManagement = () => {
             </button>
           )}
         </Card>
+      )}
+
+      {showRatings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-orange-600 uppercase tracking-wide">
+                  {t('teachersPage.ratings.title')}
+                </p>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedTeacher?.firstName} {selectedTeacher?.lastName}
+                </h2>
+              </div>
+              <button
+                onClick={closeRatings}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center gap-2">
+                  <Star className="w-6 h-6 text-orange-500 fill-orange-500" />
+                  <div>
+                    <p className="text-sm text-gray-500">{t('teachersPage.ratings.average')}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {Number(ratingData.summary.average || 0).toFixed(1)}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">{t('teachersPage.ratings.total')}</p>
+                  <p className="text-lg font-semibold text-gray-900">{ratingData.summary.count || 0}</p>
+                </div>
+              </div>
+
+              {ratingsLoading ? (
+                <div className="flex justify-center items-center py-16">
+                  <LoadingSpinner size="lg" />
+                </div>
+              ) : ratingData.ratings.length > 0 ? (
+                <div className="space-y-4">
+                  {ratingData.ratings.map((r) => (
+                    <div key={r.id} className="border border-gray-200 rounded-xl p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              className="w-4 h-4"
+                              fill={s <= r.stars ? '#f97316' : 'none'}
+                              stroke={s <= r.stars ? '#ea580c' : '#d1d5db'}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-400">{formatDate(r.updatedAt || r.createdAt)}</span>
+                      </div>
+                      {r.comment ? (
+                        <div className="flex items-start gap-2 text-gray-700">
+                          <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5" />
+                          <p className="text-sm leading-relaxed">{r.comment}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400">{t('teachersPage.ratings.noComment')}</p>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        {r.parentName
+                          ? t('teachersPage.ratings.byParent', { name: r.parentName })
+                          : t('teachersPage.ratings.anonymous')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl">
+                  <p className="text-gray-500">{t('teachersPage.ratings.empty')}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {showModal && (

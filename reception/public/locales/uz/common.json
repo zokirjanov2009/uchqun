@@ -89,6 +89,16 @@
     "toastSaveError": "O'qituvchi akkauntini saqlashda xatolik",
     "toastLoadError": "O'qituvchilarni yuklashda xatolik",
     "toastDeleteError": "O'qituvchi akkauntini o'chirishda xatolik",
+    "ratings": {
+      "title": "Ota-onalar fikri",
+      "average": "O'rtacha baho",
+      "total": "Jami baholar",
+      "empty": "Hozircha baholar yo'q",
+      "noComment": "Izoh qoldirilmagan",
+      "byParent": "Kimdan: {{name}}",
+      "anonymous": "Ota-ona nomi ko'rsatilmagan",
+      "toastError": "Baholarni yuklashda xatolik"
+    },
     "form": {
       "firstName": "Ism",
       "lastName": "Familiya",

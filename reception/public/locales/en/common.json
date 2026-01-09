@@ -89,6 +89,16 @@
     "toastSaveError": "Error saving teacher account",
     "toastLoadError": "Error loading teachers",
     "toastDeleteError": "Error deleting teacher account",
+    "ratings": {
+      "title": "Parent feedback",
+      "average": "Average rating",
+      "total": "Total ratings",
+      "empty": "No ratings yet",
+      "noComment": "No comment provided",
+      "byParent": "From: {{name}}",
+      "anonymous": "Parent name hidden",
+      "toastError": "Failed to load ratings"
+    },
     "form": {
       "firstName": "First Name",
       "lastName": "Last Name",

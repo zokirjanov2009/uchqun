@@ -2,9 +2,10 @@ import User from '../models/User.js';
 import Child from '../models/Child.js';
 import Group from '../models/Group.js';
 import Document from '../models/Document.js';
+import TeacherRating from '../models/TeacherRating.js';
 import logger from '../utils/logger.js';
 import bcrypt from 'bcryptjs';
-import { Op } from 'sequelize';
+import { Op, fn, col } from 'sequelize';
 import { uploadFile } from '../config/storage.js';
 import fs from 'fs';
 
@@ -169,6 +170,65 @@ export const createTeacher = async (req, res) => {
   } catch (error) {
     logger.error('Create teacher error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to create teacher account' });
+  }
+};
+
+/**
+ * Get teacher rating summary and recent feedback
+ * GET /api/reception/teachers/:id/ratings
+ */
+export const getTeacherRatings = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const teacher = await User.findOne({ where: { id, role: 'teacher' } });
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    const summaryRaw = await TeacherRating.findOne({
+      where: { teacherId: id },
+      attributes: [
+        [fn('AVG', col('stars')), 'averageStars'],
+        [fn('COUNT', col('id')), 'totalRatings'],
+      ],
+      raw: true,
+    });
+
+    const ratings = await TeacherRating.findAll({
+      where: { teacherId: id },
+      order: [['updatedAt', 'DESC']],
+      limit: 20,
+      include: [
+        {
+          model: User,
+          as: 'ratingParent',
+          attributes: ['id', 'firstName', 'lastName', 'email'],
+        },
+      ],
+    });
+
+    const average = summaryRaw?.averageStars
+      ? Number(parseFloat(summaryRaw.averageStars).toFixed(2))
+      : 0;
+    const count = summaryRaw?.totalRatings ? Number(summaryRaw.totalRatings) : 0;
+
+    res.json({
+      success: true,
+      data: {
+        teacher: teacher.toJSON(),
+        summary: { average, count },
+        ratings: ratings.map((r) => ({
+          ...r.toJSON(),
+          parentName: r.ratingParent
+            ? `${r.ratingParent.firstName || ''} ${r.ratingParent.lastName || ''}`.trim()
+            : null,
+        })),
+      },
+    });
+  } catch (error) {
+    logger.error('Get teacher ratings error', { error: error.message, stack: error.stack });
+    res.status(500).json({ error: 'Failed to fetch teacher ratings' });
   }
 };
 

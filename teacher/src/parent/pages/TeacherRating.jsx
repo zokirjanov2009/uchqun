@@ -34,8 +34,8 @@ const TeacherRating = () => {
       const [profileRes, ratingRes] = await Promise.all([
         api.get('/parent/profile'),
         api.get('/parent/ratings').catch((err) => {
-          // When no teacher is assigned or rating not found, continue gracefully
-          if (err.response?.status === 400) {
+          // Treat 400/404 as “no rating yet” to stay resilient with older APIs
+          if (err.response?.status === 400 || err.response?.status === 404) {
             return { data: { data: { rating: null, summary: { average: 0, count: 0 } } } };
           }
           throw err;
@@ -87,7 +87,12 @@ const TeacherRating = () => {
       setSuccess(t('ratingPage.success'));
 
       // Refresh summary after saving
-      const refreshRes = await api.get('/parent/ratings');
+      const refreshRes = await api.get('/parent/ratings').catch((err) => {
+        if (err.response?.status === 400 || err.response?.status === 404) {
+          return { data: { data: { summary: { average: 0, count: 0 } } } };
+        }
+        throw err;
+      });
       const ratingData = refreshRes?.data?.data || {};
       setSummary(ratingData.summary || { average: 0, count: 0 });
     } catch (err) {
