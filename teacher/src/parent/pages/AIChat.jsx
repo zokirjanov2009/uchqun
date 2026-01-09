@@ -6,7 +6,7 @@ import Card from '../components/Card';
 import { useToast } from '../context/ToastContext';
 
 const AIChat = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { error: showErrorToast } = useToast();
   const [messages, setMessages] = useState([
     {
