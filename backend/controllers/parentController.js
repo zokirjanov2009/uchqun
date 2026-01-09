@@ -489,6 +489,35 @@ export const getAIAdvice = async (req, res) => {
       message: message.trim(),
     };
 
+    // Build prompts once (used for primary call and free-model fallback)
+    const systemPrompt = `You are a helpful AI assistant specialized in providing advice to parents of children with special needs and disabilities. 
+You provide practical, empathetic, and evidence-based advice about:
+- How to care for children with disabilities at home
+- Daily routines and activities
+- Nutrition and meal planning
+- Communication strategies
+- Behavioral support
+- Emotional support for both children and parents
+- Safety considerations
+- Educational activities at home
+
+Always respond in a warm, supportive, and professional manner. If the parent mentions their child's specific disability type or special needs, incorporate that into your advice.`;
+
+    const userPrompt = child
+      ? `Parent: ${context.parentName}
+Child: ${context.child.name} (${context.child.age} years old, ${context.child.gender})
+Disability Type: ${context.child.disabilityType || 'Not specified'}
+Special Needs: ${context.child.specialNeeds || 'None specified'}
+
+Parent's Question: ${context.message}
+
+Please provide helpful, practical advice.`
+      : `Parent: ${context.parentName}
+
+Parent's Question: ${context.message}
+
+Please provide helpful, practical advice about caring for children with special needs.`;
+
     // Try to use OpenAI/OpenRouter API if available
     let aiResponse;
     const hasOpenAIKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim().length > 0;
@@ -519,34 +548,6 @@ export const getAIAdvice = async (req, res) => {
         }
         
         const openai = new OpenAI(openaiConfig);
-
-        const systemPrompt = `You are a helpful AI assistant specialized in providing advice to parents of children with special needs and disabilities. 
-You provide practical, empathetic, and evidence-based advice about:
-- How to care for children with disabilities at home
-- Daily routines and activities
-- Nutrition and meal planning
-- Communication strategies
-- Behavioral support
-- Emotional support for both children and parents
-- Safety considerations
-- Educational activities at home
-
-Always respond in a warm, supportive, and professional manner. If the parent mentions their child's specific disability type or special needs, incorporate that into your advice.`;
-
-        const userPrompt = child
-          ? `Parent: ${context.parentName}
-Child: ${context.child.name} (${context.child.age} years old, ${context.child.gender})
-Disability Type: ${context.child.disabilityType || 'Not specified'}
-Special Needs: ${context.child.specialNeeds || 'None specified'}
-
-Parent's Question: ${context.message}
-
-Please provide helpful, practical advice.`
-          : `Parent: ${context.parentName}
-
-Parent's Question: ${context.message}
-
-Please provide helpful, practical advice about caring for children with special needs.`;
 
         // Determine model to use
         let modelToUse = process.env.OPENAI_MODEL;
