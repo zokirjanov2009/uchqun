@@ -3,9 +3,11 @@ import { MessageCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { loadMessages, addMessage, markRead } from '../shared/services/chatStore';
 import api from '../shared/services/api';
+import { useAuth } from '../shared/context/AuthContext';
 
 const Chat = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [parents, setParents] = useState([]);
   const [selectedParent, setSelectedParent] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -15,16 +17,19 @@ const Chat = () => {
     const fetchParents = async () => {
       try {
         const res = await api.get('/teacher/parents');
-        setParents(res.data.parents || []);
-        if ((res.data.parents || []).length > 0) {
-          setSelectedParent(res.data.parents[0]);
+        const list = (res.data.parents || []).filter(
+          (p) => !user?.id || p.teacherId === user.id
+        );
+        setParents(list);
+        if (list.length > 0) {
+          setSelectedParent(list[0]);
         }
       } catch (err) {
         console.error('Failed to load parents for chat', err);
       }
     };
     fetchParents();
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     const load = async () => {

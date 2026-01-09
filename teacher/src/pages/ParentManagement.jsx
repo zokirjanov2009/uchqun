@@ -11,6 +11,7 @@ import LoadingSpinner from '../shared/components/LoadingSpinner';
 import { useToast } from '../shared/context/ToastContext';
 import api from '../shared/services/api';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../shared/context/AuthContext';
 
 const ParentManagement = () => {
   const [parents, setParents] = useState([]);
@@ -18,6 +19,7 @@ const ParentManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { error: showError } = useToast();
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadParents();
@@ -27,7 +29,9 @@ const ParentManagement = () => {
     try {
       setLoading(true);
       const response = await api.get('/teacher/parents');
-      setParents(Array.isArray(response.data.parents) ? response.data.parents : []);
+      const list = Array.isArray(response.data.parents) ? response.data.parents : [];
+      const filtered = user?.id ? list.filter((p) => p.teacherId === user.id) : list;
+      setParents(filtered);
     } catch (error) {
       console.error('Error loading parents:', error);
       showError(error.response?.data?.error || t('parentsPage.noParentsFound'));
