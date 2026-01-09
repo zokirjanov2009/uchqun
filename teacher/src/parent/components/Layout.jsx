@@ -12,7 +12,7 @@ const Layout = () => {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-40 pt-4">
+      <div className="hidden lg:block fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-40">
         <Sidebar />
       </div>
 
