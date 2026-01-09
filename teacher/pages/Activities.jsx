@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -89,7 +89,9 @@ const addDays = (date, daysToAdd) => {
 const statusOptions = ["attended", "late", "excused", "absent"];
 const participationOptions = ["great", "average", "needs_help"];
 
-export default function ActivitiesPage() {
+export default function Activities() {
+  const formRef = useRef(null);
+  const titleRef = useRef(null);
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date()));
   const [scheduleData, setScheduleData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,6 +131,7 @@ export default function ActivitiesPage() {
   const handleAdd = (e) => {
     e.preventDefault();
     if (!form.title.trim()) return;
+    if (form.end <= form.start) return;
 
     setScheduleData((prev) => {
       const existing = [...prev];
@@ -161,6 +164,11 @@ export default function ActivitiesPage() {
     setForm((f) => ({ ...f, title: "" }));
   };
 
+  const handleAddButtonClick = () => {
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => titleRef.current?.focus(), 150);
+  };
+
   return (
     <div className="min-h-screen px-6 py-10 bg-gradient-to-b from-[#f7f4ff] via-[#f6f9ff] to-[#fff7ed] text-gray-900">
       <div className="relative max-w-6xl mx-auto mb-8 p-6 rounded-3xl border border-indigo-100 shadow-lg bg-white overflow-hidden">
@@ -188,7 +196,10 @@ export default function ActivitiesPage() {
               {weekRangeLabel}
             </span>
             {isTeacher && (
-              <button className="ml-2 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-emerald-400 text-white font-semibold shadow hover:shadow-md transition">
+              <button
+                onClick={handleAddButtonClick}
+                className="ml-2 inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-emerald-400 text-white font-semibold shadow hover:shadow-md transition"
+              >
                 + Add activity
               </button>
             )}
@@ -215,6 +226,7 @@ export default function ActivitiesPage() {
 
       {isTeacher && (
         <form
+          ref={formRef}
           onSubmit={handleAdd}
           className="max-w-6xl mx-auto mb-6 grid grid-cols-2 md:grid-cols-6 gap-3 p-4 rounded-2xl bg-white border border-indigo-100 shadow-sm"
         >
@@ -257,6 +269,7 @@ export default function ActivitiesPage() {
             <input
               type="text"
               className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
+              ref={titleRef}
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               placeholder="Lesson name"
