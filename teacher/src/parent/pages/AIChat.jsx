@@ -54,6 +54,7 @@ const AIChat = () => {
     try {
       const response = await api.post('/parent/ai/chat', {
         message: userMessage,
+        lang: i18n.language,
       });
 
       if (response.data.success) {

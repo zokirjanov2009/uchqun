@@ -491,7 +491,8 @@ export const getAIAdvice = async (req, res) => {
 
     // Determine preferred language from headers (fallback to en)
     const acceptLanguage = req.headers['accept-language'] || '';
-    const langCode = acceptLanguage.split(',')[0]?.split('-')[0]?.toLowerCase() || 'en';
+    const requestedLang = (req.body?.lang || '').toLowerCase();
+    const langCode = (requestedLang || acceptLanguage.split(',')[0]?.split('-')[0] || 'en').toLowerCase();
     const languageName = {
       uz: 'Uzbek',
       ru: 'Russian',
