@@ -8,7 +8,6 @@ import {
   Calendar,
   School,
   Heart,
-  Phone,
   ShieldAlert,
   Baby,
   Award,
@@ -265,29 +264,6 @@ const ChildProfile = () => {
 
         {/* --- Right Column: Sidebar --- */}
         <div className="space-y-8">
-          
-          {/* Emergency Contact */}
-          <section className="bg-white rounded-[2rem] p-8 shadow-md border-t-4 border-t-orange-500">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Phone className="w-5 h-5 text-orange-600" /> {t('child.emergency')}
-            </h3>
-            <div className="space-y-4">
-              <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                <p className="text-xs text-orange-600 font-bold uppercase mb-1">{child.emergencyContact.relationship}</p>
-                <p className="text-lg font-black text-gray-900 mb-2">{child.emergencyContact.name}</p>
-                <a 
-                  href={`tel:${child.emergencyContact.phone}`}
-                  className="inline-flex items-center gap-2 text-orange-700 font-bold hover:underline"
-                >
-                  <div className="bg-orange-600 p-2 rounded-lg text-white">
-                    <Phone className="w-4 h-4" />
-                  </div>
-                  {child.emergencyContact.phone}
-                </a>
-              </div>
-            </div>
-          </section>
-
           {/* Activity Summary - Weekly Results */}
           <section className="bg-gray-800 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden">
             <div className="absolute bottom-0 right-0 opacity-20">
