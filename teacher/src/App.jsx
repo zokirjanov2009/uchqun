@@ -22,6 +22,7 @@ import ParentChat from './parent/pages/Chat';
 import Notifications from './parent/pages/Notifications';
 import Help from './parent/pages/Help';
 import AIChat from './parent/pages/AIChat';
+import TeacherRating from './parent/pages/TeacherRating';
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
                 <Route path="chat" element={<ParentChat />} />
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="help" element={<Help />} />
+                <Route path="rating" element={<TeacherRating />} />
               </Route>
 
               {/* Teacher routes */}

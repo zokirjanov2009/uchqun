@@ -114,6 +114,30 @@
     "edit": "Tahrirlash",
     "delete": "O‘chirish"
   },
+  "ratingPage": {
+    "title": "O‘qituvchini baholash",
+    "subtitle": "Farzandingiz o‘qituvchisiga baho bering va fikr qoldiring",
+    "yourTeacher": "Biriktirilgan o‘qituvchi",
+    "average": "O‘rtacha baho",
+    "ratingsCount": "{{count}} ta baho",
+    "noTeacher": "Biriktirilgan o‘qituvchi topilmadi. Iltimos, maktab bilan bog‘laning.",
+    "starsLabel": "Baho tanlang",
+    "commentLabel": "Izoh",
+    "commentPlaceholder": "Nimalar yaxshi ishlayotganini yoki yaxshilash kerakligini yozing...",
+    "optional": "Ixtiyoriy",
+    "submit": "Fikrni yuborish",
+    "update": "Fikrni yangilash",
+    "success": "Rahmat! Fikringiz saqlandi.",
+    "errorLoad": "Baholash ma’lumotlarini yuklab bo‘lmadi. Qayta urinib ko‘ring.",
+    "errorSave": "Bahoni saqlashda xatolik. Qayta urinib ko‘ring.",
+    "errorRequired": "Iltimos, yulduzcha bahosini tanlang.",
+    "yourRating": "Sizning baho va fikringiz",
+    "rateCta": "Bu bahoni o‘qituvchi ko‘radi",
+    "noComment": "Hozircha izoh qoldirmadingiz.",
+    "summaryTitle": "Boshqa ota-onalar fikri",
+    "lastUpdated": "So‘nggi yangilanish: {{date}}",
+    "noPhone": "Telefon ko‘rsatilmagan"
+  },
   "language": "Til"
 }
 

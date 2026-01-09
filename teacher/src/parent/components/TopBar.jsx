@@ -54,9 +54,9 @@ const TopBar = ({ onMenuClick }) => {
           <User className="w-6 h-6" />
         </Link>
 
-        {/* Rating / Feedback (re-use help page as feedback) */}
+        {/* Rating / Feedback */}
         <Link
-          to="/help"
+          to="/rating"
           className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
           aria-label={t('nav.rating')}
           title={t('nav.rating')}

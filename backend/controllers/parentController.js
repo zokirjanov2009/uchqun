@@ -4,8 +4,9 @@ import ParentActivity from '../models/ParentActivity.js';
 import ParentMeal from '../models/ParentMeal.js';
 import ParentMedia from '../models/ParentMedia.js';
 import Child from '../models/Child.js';
+import TeacherRating from '../models/TeacherRating.js';
 import logger from '../utils/logger.js';
-import { Op } from 'sequelize';
+import { Op, fn, col } from 'sequelize';
 
 /**
  * Parent Controller
@@ -352,6 +353,100 @@ export const getParentData = async (req, res) => {
   } catch (error) {
     logger.error('Get parent data error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch parent data' });
+  }
+};
+
+/**
+ * Rate assigned teacher
+ * POST /api/parent/ratings
+ * Body: { stars: 1-5, comment?: string }
+ */
+export const rateMyTeacher = async (req, res) => {
+  try {
+    const { stars, comment } = req.body;
+
+    if (!stars || Number.isNaN(Number(stars))) {
+      return res.status(400).json({ error: 'Stars is required' });
+    }
+    const starsNum = Number(stars);
+    if (starsNum < 1 || starsNum > 5) {
+      return res.status(400).json({ error: 'Stars must be between 1 and 5' });
+    }
+
+    // Ensure parent has assigned teacher
+    const parent = await User.findByPk(req.user.id);
+    if (!parent || !parent.teacherId) {
+      return res.status(400).json({ error: 'Assigned teacher not found' });
+    }
+
+    // Upsert rating
+    const [rating, created] = await TeacherRating.findOrCreate({
+      where: { teacherId: parent.teacherId, parentId: req.user.id },
+      defaults: {
+        stars: starsNum,
+        comment: comment || null,
+      },
+    });
+
+    if (!created) {
+      rating.stars = starsNum;
+      rating.comment = comment || null;
+      await rating.save();
+    }
+
+    res.json({
+      success: true,
+      data: rating.toJSON(),
+    });
+  } catch (error) {
+    logger.error('Rate teacher error', { error: error.message, stack: error.stack });
+    res.status(500).json({ error: 'Failed to rate teacher' });
+  }
+};
+
+/**
+ * Get parent's current rating and teacher average
+ * GET /api/parent/ratings
+ */
+export const getMyRating = async (req, res) => {
+  try {
+    const parent = await User.findByPk(req.user.id);
+
+    if (!parent || !parent.teacherId) {
+      return res.status(400).json({ error: 'Assigned teacher not found' });
+    }
+
+    const rating = await TeacherRating.findOne({
+      where: { teacherId: parent.teacherId, parentId: req.user.id },
+    });
+
+    const summaryRaw = await TeacherRating.findOne({
+      where: { teacherId: parent.teacherId },
+      attributes: [
+        [fn('AVG', col('stars')), 'averageStars'],
+        [fn('COUNT', col('id')), 'totalRatings'],
+      ],
+      raw: true,
+    });
+
+    const average = summaryRaw?.averageStars
+      ? Number(parseFloat(summaryRaw.averageStars).toFixed(2))
+      : 0;
+    const count = summaryRaw?.totalRatings ? Number(summaryRaw.totalRatings) : 0;
+
+    res.json({
+      success: true,
+      data: {
+        rating: rating ? rating.toJSON() : null,
+        summary: {
+          average,
+          count,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error('Get rating error', { error: error.message, stack: error.stack });
+    res.status(500).json({ error: 'Failed to fetch rating' });
   }
 };
 

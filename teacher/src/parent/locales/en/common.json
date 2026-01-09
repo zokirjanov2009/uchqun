@@ -114,6 +114,30 @@
     "edit": "Edit",
     "delete": "Delete"
   },
+  "ratingPage": {
+    "title": "Teacher feedback",
+    "subtitle": "Rate your child's teacher and share suggestions",
+    "yourTeacher": "Assigned teacher",
+    "average": "Average rating",
+    "ratingsCount": "{{count}} ratings",
+    "noTeacher": "Assigned teacher not found. Please contact the school.",
+    "starsLabel": "Select a rating",
+    "commentLabel": "Comment",
+    "commentPlaceholder": "Share what is working well or what needs attention...",
+    "optional": "Optional",
+    "submit": "Send feedback",
+    "update": "Update feedback",
+    "success": "Thank you! Your feedback has been saved.",
+    "errorLoad": "Could not load rating data. Please try again.",
+    "errorSave": "Could not save your rating. Please try again.",
+    "errorRequired": "Please choose a star rating.",
+    "yourRating": "Your feedback",
+    "rateCta": "Your teacher will see this rating",
+    "noComment": "You have not added a comment yet.",
+    "summaryTitle": "Community feedback",
+    "lastUpdated": "Last updated {{date}}",
+    "noPhone": "Phone not provided"
+  },
   "language": "Language"
 }
 

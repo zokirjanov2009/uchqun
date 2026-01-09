@@ -14,6 +14,7 @@ import Activity from './Activity.js';
 import Media from './Media.js';
 import Meal from './Meal.js';
 import Notification from './Notification.js';
+import TeacherRating from './TeacherRating.js';
 
 // Initialize all models
 const models = {
@@ -32,6 +33,7 @@ const models = {
   Media,
   Meal,
   Notification,
+  TeacherRating,
   sequelize,
 };
 
@@ -87,6 +89,12 @@ Child.belongsTo(User, { foreignKey: 'parentId', as: 'parent' });
 // Child -> Notification (One-to-Many: Child has multiple notifications)
 Child.hasMany(Notification, { foreignKey: 'childId', as: 'notifications' });
 Notification.belongsTo(Child, { foreignKey: 'childId', as: 'child' });
+
+// Teacher ratings
+User.hasMany(TeacherRating, { foreignKey: 'teacherId', as: 'receivedRatings' });
+User.hasMany(TeacherRating, { foreignKey: 'parentId', as: 'givenRatings' });
+TeacherRating.belongsTo(User, { foreignKey: 'teacherId', as: 'ratedTeacher' });
+TeacherRating.belongsTo(User, { foreignKey: 'parentId', as: 'ratingParent' });
 
 // Child -> Group (child belongs to a group)
 Child.belongsTo(Group, { foreignKey: 'groupId', as: 'childGroup' });

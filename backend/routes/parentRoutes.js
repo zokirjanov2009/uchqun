@@ -11,6 +11,8 @@ import {
   getMyProfile,
   getParentData,
   getAIAdvice,
+  rateMyTeacher,
+  getMyRating,
 } from '../controllers/parentController.js';
 
 const router = express.Router();
@@ -38,6 +40,8 @@ router.get('/meals/:id', authenticate, requireParent, getMealById);
 router.get('/media', authenticate, requireParent, getMyMedia);
 router.get('/media/:id', authenticate, requireParent, getMediaById);
 router.get('/profile', authenticate, requireParent, getMyProfile);
+router.get('/ratings', authenticate, requireParent, getMyRating);
+router.post('/ratings', authenticate, requireParent, rateMyTeacher);
 
 // View parent data (accessible by Admin or Reception when clicking on parent in list)
 // This route must come after all specific routes to avoid conflicts
