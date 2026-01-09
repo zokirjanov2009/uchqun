@@ -34,14 +34,14 @@ const BottomNav = () => {
 
   return (
     <div className="bg-white border-t border-gray-200 shadow-lg">
-      <nav className="flex justify-around items-center h-16">
+      <nav className="flex items-center h-16 overflow-x-auto px-2 gap-2">
         {navigation.map((item) => {
           const active = isActive(item.href);
           return (
             <Link
               key={item.name}
               to={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+              className={`flex-none w-[74px] flex flex-col items-center justify-center h-full rounded-lg transition-colors ${
                 active ? 'text-orange-600' : 'text-gray-500'
               }`}
             >
@@ -53,7 +53,7 @@ const BottomNav = () => {
                   </span>
                 )}
               </div>
-              <span className={`text-xs font-medium ${active ? 'text-orange-600' : 'text-gray-500'}`}>
+              <span className={`text-[11px] font-medium text-center leading-tight ${active ? 'text-orange-600' : 'text-gray-500'}`}>
                 {item.name}
               </span>
             </Link>
@@ -62,11 +62,11 @@ const BottomNav = () => {
         {/* Exit Button */}
         <button
           onClick={handleLogout}
-          className="flex flex-col items-center justify-center flex-1 h-full transition-colors text-red-600 hover:text-red-700"
+          className="flex-none w-[74px] flex flex-col items-center justify-center h-full transition-colors text-red-600 hover:text-red-700"
           aria-label="Exit"
         >
           <LogOut className="w-5 h-5 mb-1" />
-          <span className="text-xs font-medium">{t('nav.logout')}</span>
+          <span className="text-[11px] font-medium leading-tight">{t('nav.logout')}</span>
         </button>
       </nav>
     </div>
