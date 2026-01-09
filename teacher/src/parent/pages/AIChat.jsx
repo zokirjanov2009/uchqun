@@ -5,16 +5,29 @@ import api from '../services/api';
 import Card from '../components/Card';
 import { useToast } from '../context/ToastContext';
 
+const STORAGE_KEY = 'parent-ai-chat-messages';
+
 const AIChat = () => {
   const { t, i18n } = useTranslation();
   const { error: showErrorToast } = useToast();
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: t('aiChat.welcomeMessage') || 'Hello! I\'m your AI assistant. How can I help you today?',
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to load saved AI chat', e);
+    }
+    return [
+      {
+        role: 'assistant',
+        content: t('aiChat.welcomeMessage') || "Hello! I'm your AI assistant. How can I help you today?",
+        timestamp: new Date().toISOString(),
+      },
+    ];
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -26,6 +39,15 @@ const AIChat = () => {
 
   useEffect(() => {
     scrollToBottom();
+  }, [messages]);
+
+  // Persist messages
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch (e) {
+      console.warn('Failed to save AI chat history', e);
+    }
   }, [messages]);
 
   // Ensure translation function is available
