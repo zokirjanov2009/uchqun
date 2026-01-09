@@ -126,7 +126,7 @@ const AIChat = () => {
       </div>
 
       {/* Chat Container */}
-      <Card className="p-0 overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}>
+      <Card className="p-0 overflow-hidden flex flex-col h-[calc(100vh-220px)] min-h-[420px] md:h-auto md:min-h-[500px]">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50">
           {messages.map((message, index) => (
