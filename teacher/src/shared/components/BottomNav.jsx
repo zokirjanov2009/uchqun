@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { getUnreadTotalForPrefix } from '../services/chatStore';
 
-const BottomNav = () => {
+const BottomNav = ({ variant = 'bottom' }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -32,16 +32,21 @@ const BottomNav = () => {
     return location.pathname.startsWith(path);
   };
 
+  const isTop = variant === 'top';
+
   return (
-    <div className="bg-white border-t border-gray-200 shadow-lg">
-      <nav className="flex items-center h-16 overflow-x-auto px-2 gap-2">
+    <div className={isTop ? 'bg-white border-b border-gray-200 shadow-sm' : 'bg-white border-t border-gray-200 shadow-lg'}>
+      <nav
+        className={`flex flex-wrap items-center justify-between gap-2 px-2 ${isTop ? 'py-3' : 'py-2'}`}
+        style={{ minHeight: isTop ? '68px' : '64px' }}
+      >
         {navigation.map((item) => {
           const active = isActive(item.href);
           return (
             <Link
               key={item.name}
               to={item.href}
-              className={`flex-none w-[74px] flex flex-col items-center justify-center h-full rounded-lg transition-colors ${
+              className={`flex-1 min-w-[72px] max-w-[96px] flex flex-col items-center justify-center h-full rounded-lg transition-colors ${
                 active ? 'text-orange-600' : 'text-gray-500'
               }`}
             >
@@ -62,7 +67,7 @@ const BottomNav = () => {
         {/* Exit Button */}
         <button
           onClick={handleLogout}
-          className="flex-none w-[74px] flex flex-col items-center justify-center h-full transition-colors text-red-600 hover:text-red-700"
+          className="flex-1 min-w-[72px] max-w-[96px] flex flex-col items-center justify-center h-full transition-colors text-red-600 hover:text-red-700"
           aria-label="Exit"
         >
           <LogOut className="w-5 h-5 mb-1" />
