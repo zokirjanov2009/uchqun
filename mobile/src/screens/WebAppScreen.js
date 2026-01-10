@@ -61,6 +61,8 @@ export function WebAppScreen() {
       try {
         const u = String(url || '');
         if (u.includes('/login')) {
+          // Don't block the navigation here; just invalidate session.
+          // RootNavigator will switch to native Login screen.
           await logout();
           return true;
         }
@@ -122,8 +124,9 @@ export function WebAppScreen() {
         onShouldStartLoadWithRequest={(req) => {
           // If web redirects to /login, treat as logged out and stop navigating there.
           if (req?.url && req.url.includes('/login')) {
+            // Allow the request; native navigation will take over right after logout.
             maybeInterceptLogin(req.url);
-            return false;
+            return true;
           }
           return true;
         }}
