@@ -9,12 +9,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 
 export function LoginScreen() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,14 +61,29 @@ export function LoginScreen() {
         />
 
         <Text style={styles.label}>Parol</Text>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          textContentType="password"
-          placeholder="••••••••"
-          style={styles.input}
-        />
+        <View style={styles.passwordWrap}>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            textContentType="password"
+            placeholder="••••••••"
+            style={[styles.input, styles.inputWithRightIcon]}
+          />
+          <Pressable
+            onPress={() => setShowPassword((v) => !v)}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? 'Parolni yashirish' : 'Parolni ko‘rsatish'}
+            hitSlop={10}
+            style={({ pressed }) => [styles.eyeButton, pressed && styles.eyeButtonPressed]}
+          >
+            <Ionicons
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={22}
+              color="#6b7280"
+            />
+          </Pressable>
+        </View>
 
         <Pressable
           onPress={onSubmit}
@@ -116,6 +133,22 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#fff',
   },
+  passwordWrap: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  inputWithRightIcon: {
+    paddingRight: 44,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 10,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  eyeButtonPressed: { opacity: 0.7 },
   button: {
     marginTop: 16,
     backgroundColor: '#ea580c',

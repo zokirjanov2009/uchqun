@@ -2,7 +2,7 @@ import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,8 +91,12 @@ async function runMigrations() {
 }
 
 // Run migrations if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runMigrations();
+try {
+  if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    runMigrations();
+  }
+} catch {
+  // ignore auto-run detection errors
 }
 
 export { runMigrations };

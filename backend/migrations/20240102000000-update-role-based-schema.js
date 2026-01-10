@@ -23,6 +23,9 @@ export const up = async (queryInterface, Sequelize) => {
         -- Create new enum with all roles
         CREATE TYPE "enum_users_role_new" AS ENUM ('admin', 'reception', 'teacher', 'parent');
         
+        -- Drop default to avoid casting issues during enum change
+        ALTER TABLE "users" ALTER COLUMN "role" DROP DEFAULT;
+
         -- Alter users table to use new enum
         ALTER TABLE "users" 
           ALTER COLUMN "role" TYPE "enum_users_role_new" 
@@ -36,6 +39,9 @@ export const up = async (queryInterface, Sequelize) => {
         -- Drop old enum and rename new one
         DROP TYPE IF EXISTS "enum_users_role";
         ALTER TYPE "enum_users_role_new" RENAME TO "enum_users_role";
+
+        -- Restore default
+        ALTER TABLE "users" ALTER COLUMN "role" SET DEFAULT 'parent'::"enum_users_role";
       END IF;
     END $$;
   `);

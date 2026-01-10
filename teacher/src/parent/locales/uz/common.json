@@ -1,4 +1,5 @@
 {
+  "language": "Til",
   "nav": {
     "home": "Bosh sahifa",
     "activities": "Faoliyatlar",
@@ -8,8 +9,12 @@
     "aiChat": "AI Yordamchi",
     "chat": "Chat",
     "rating": "Fikr bildirish",
+    "notifications": "Bildirishnomalar",
     "exit": "Chiqish",
     "menu": "Asosiy menyu"
+  },
+  "profile": {
+    "account": "Hisob"
   },
   "child": {
     "title": "Farzand profili",
@@ -112,8 +117,12 @@
     "parent": "Ota-ona",
     "teacher": "O‘qituvchi",
     "edit": "Tahrirlash",
-    "delete": "O‘chirish"
+    "delete": "O‘chirish",
+    "confirmDelete": "Ushbu xabar o‘chirilsinmi?",
+    "scrollToBottom": "Pastga tushirish"
   },
+  "cancel": "Bekor qilish",
+  "save": "Saqlash",
   "ratingPage": {
     "title": "O‘qituvchini baholash",
     "subtitle": "Farzandingiz o‘qituvchisiga baho bering va fikr qoldiring",

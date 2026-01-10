@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BottomNav from '../shared/components/BottomNav';
-import LanguageSwitcher from './LanguageSwitcher';
 import { MessageCircle } from 'lucide-react';
 
 const Layout = () => {
@@ -9,11 +8,6 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Language switcher fixed top-right */}
-      <div className="fixed top-2 right-3 z-50">
-        <LanguageSwitcher />
-      </div>
-
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-40 pt-4">
         <Sidebar />

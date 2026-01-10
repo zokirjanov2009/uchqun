@@ -194,7 +194,9 @@
     "parent": "Ota-ona",
     "teacher": "O'qituvchi",
     "edit": "Tahrirlash",
-    "delete": "O‘chirish"
+    "delete": "O‘chirish",
+    "confirmDelete": "Ushbu xabar o‘chirilsinmi?",
+    "scrollToBottom": "Pastga tushirish"
   }
 }
 

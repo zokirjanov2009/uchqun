@@ -3,6 +3,7 @@ import { useAuth } from '../shared/context/AuthContext';
 import Card from '../shared/components/Card';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -21,13 +22,16 @@ const Profile = () => {
           <h1 className="text-3xl font-black text-gray-900">Profile</h1>
           <p className="text-gray-500 text-sm">Manage your account</p>
         </div>
-        <button
-          onClick={handleLogout}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          {t('nav.logout')}
-        </button>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            {t('nav.logout')}
+          </button>
+        </div>
       </div>
 
       <Card className="p-6">

@@ -86,3 +86,59 @@ export const markConversationRead = async (req, res) => {
   }
 };
 
+export const updateMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+
+    if (!id) return res.status(400).json({ error: 'id is required' });
+    if (!content?.trim()) return res.status(400).json({ error: 'content is required' });
+
+    const msg = await ChatMessage.findByPk(id);
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+
+    if (!canAccessConversation(req, msg.conversationId)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'superAdmin';
+    const isOwner = msg.senderId === req.user.id;
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ error: 'Only the sender can edit this message' });
+    }
+
+    msg.content = content.trim();
+    await msg.save();
+
+    res.json(msg);
+  } catch (err) {
+    console.error('updateMessage error', err);
+    res.status(500).json({ error: 'Failed to update message' });
+  }
+};
+
+export const deleteMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'id is required' });
+
+    const msg = await ChatMessage.findByPk(id);
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+
+    if (!canAccessConversation(req, msg.conversationId)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'superAdmin';
+    const isOwner = msg.senderId === req.user.id;
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ error: 'Only the sender can delete this message' });
+    }
+
+    await msg.destroy();
+    res.json({ success: true });
+  } catch (err) {
+    console.error('deleteMessage error', err);
+    res.status(500).json({ error: 'Failed to delete message' });
+  }
+};

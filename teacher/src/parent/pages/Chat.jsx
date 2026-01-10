@@ -1,24 +1,45 @@
-import { useState, useMemo, useEffect } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { ArrowDown, MessageCircle, Pencil, Send, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { loadMessages, addMessage, markRead } from '../../shared/services/chatStore';
+import { loadMessages, addMessage, markRead, updateMessage, deleteMessage } from '../../shared/services/chatStore';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const Chat = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const conversationId = user?.id ? `parent:${user.id}` : null;
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const messagesEndRef = useRef(null);
+  const messagesWrapRef = useRef(null);
+  const justSentRef = useRef(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState('');
+  const [busyId, setBusyId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
+    let alive = true;
+    let intervalId;
+
     const load = async () => {
       if (!conversationId) return;
       const msgs = await loadMessages(conversationId);
+      if (!alive) return;
       setMessages(Array.isArray(msgs) ? msgs : []);
       await markRead(conversationId);
     };
+
     load();
+    intervalId = setInterval(load, 5000);
+
+    return () => {
+      alive = false;
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [conversationId]);
 
   const sorted = useMemo(
@@ -29,18 +50,68 @@ const Chat = () => {
     [messages]
   );
 
+  useEffect(() => {
+    if (isAtBottom || justSentRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      justSentRef.current = false;
+    }
+  }, [sorted.length, isAtBottom]);
+
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
     if (!conversationId) return;
     await addMessage('parent', trimmed, conversationId);
+    justSentRef.current = true;
     const msgs = await loadMessages(conversationId);
     setMessages(Array.isArray(msgs) ? msgs : []);
     setInput('');
   };
 
+  const handleSaveEdit = async (msgId) => {
+    const trimmed = editValue.trim();
+    if (!trimmed) return;
+    setBusyId(msgId);
+    // Optimistic update
+    setMessages((prev) =>
+      prev.map((m) => (m.id === msgId ? { ...m, content: trimmed } : m))
+    );
+
+    const updated = await updateMessage(msgId, trimmed);
+    if (!updated) {
+      toastError(t('chat.updateFailed', { defaultValue: 'Failed to update message' }));
+    } else {
+      toastSuccess(t('chat.updated', { defaultValue: 'Message updated' }));
+    }
+    if (conversationId) {
+      const msgs = await loadMessages(conversationId);
+      setMessages(Array.isArray(msgs) ? msgs : []);
+    }
+    setEditingId(null);
+    setEditValue('');
+    setBusyId(null);
+  };
+
+  const handleDelete = async (msgId) => {
+    setBusyId(msgId);
+    // Optimistic remove
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+
+    const res = await deleteMessage(msgId);
+    if (!res?.success) {
+      toastError(t('chat.deleteFailed', { defaultValue: 'Failed to delete message' }));
+    } else {
+      toastSuccess(t('chat.deleted', { defaultValue: 'Message deleted' }));
+    }
+    if (conversationId) {
+      const msgs = await loadMessages(conversationId);
+      setMessages(Array.isArray(msgs) ? msgs : []);
+    }
+    setBusyId(null);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="max-w-4xl mx-auto space-y-4 -mb-16 lg:mb-0">
       <div className="flex items-center gap-3">
         <div className="p-3 rounded-2xl bg-orange-100 text-orange-600">
           <MessageCircle className="w-6 h-6" />
@@ -51,8 +122,16 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 h-[60vh] flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 h-[calc(100vh-220px)] min-h-[420px] lg:h-[60vh] flex flex-col relative">
+        <div
+          ref={messagesWrapRef}
+          className="flex-1 overflow-y-auto p-4 space-y-3"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+            setIsAtBottom(distance < 80);
+          }}
+        >
           {sorted.length === 0 && (
             <div className="text-center text-gray-400 py-8 text-sm">
               {t('chat.empty')}
@@ -65,22 +144,97 @@ const Chat = () => {
                 key={msg.id}
                 className={`flex ${isYou ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
-                    isYou
-                      ? 'bg-orange-50 text-orange-900 border border-orange-100'
-                      : 'bg-gray-100 text-gray-900 border border-gray-200'
-                  }`}
-                >
-                  <div className="text-xs font-semibold mb-1">
-                    {isYou ? t('chat.you') : t('chat.teacher')}
+                <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm border ${
+                  isYou
+                    ? 'bg-orange-50 text-orange-900 border-orange-100'
+                    : 'bg-gray-100 text-gray-900 border-gray-200'
+                }`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-xs font-semibold mb-1">
+                      {isYou ? t('chat.you') : t('chat.teacher')}
+                    </div>
+                    {isYou && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          className="p-1 rounded-md hover:bg-black/5"
+                          aria-label={t('chat.edit', { defaultValue: 'Edit' })}
+                          title={t('chat.edit', { defaultValue: 'Edit' })}
+                          disabled={busyId === msg.id}
+                          onClick={() => {
+                            setEditingId(msg.id);
+                            setEditValue((msg.content || msg.text || '').toString());
+                          }}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded-md hover:bg-black/5 text-red-600"
+                          aria-label={t('chat.delete', { defaultValue: 'Delete' })}
+                          title={t('chat.delete', { defaultValue: 'Delete' })}
+                          disabled={busyId === msg.id}
+                          onClick={() => setConfirmDeleteId(msg.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="whitespace-pre-wrap break-words">{msg.content || msg.text}</div>
+
+                  {editingId === msg.id ? (
+                    <div className="mt-2 space-y-2">
+                      <textarea
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
+                        rows={3}
+                      />
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditValue('');
+                          }}
+                          disabled={busyId === msg.id}
+                        >
+                          <X className="w-4 h-4" />
+                          {t('cancel', { defaultValue: 'Cancel' })}
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+                          onClick={() => handleSaveEdit(msg.id)}
+                          disabled={busyId === msg.id || !editValue.trim()}
+                        >
+                          <Send className="w-4 h-4" />
+                          {t('save', { defaultValue: 'Save' })}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap break-words">{msg.content || msg.text}</div>
+                  )}
                 </div>
               </div>
             );
           })}
+          <div ref={messagesEndRef} />
         </div>
+
+        {!isAtBottom && sorted.length > 0 && (
+          <button
+            type="button"
+            className="absolute bottom-16 right-4 w-11 h-11 rounded-full bg-white border border-gray-200 shadow-lg flex items-center justify-center hover:bg-gray-50"
+            aria-label={t('chat.scrollToBottom', { defaultValue: 'Scroll to bottom' })}
+            title={t('chat.scrollToBottom', { defaultValue: 'Scroll to bottom' })}
+            onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            <ArrowDown className="w-5 h-5 text-gray-700" />
+          </button>
+        )}
 
         <div className="border-t border-gray-100 p-3 bg-gray-50 rounded-b-2xl flex gap-2">
           <input
@@ -88,7 +242,7 @@ const Chat = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t('chat.placeholder')}
-            className="flex-1 rounded-xl border border-gray-200 px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="flex-1 h-12 rounded-xl border border-gray-200 px-4 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -98,13 +252,48 @@ const Chat = () => {
           />
           <button
             onClick={handleSend}
-            className="px-4 py-3 rounded-xl bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
+            className="w-12 h-12 inline-flex items-center justify-center rounded-xl bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+            aria-label={t('chat.send')}
+            title={t('chat.send')}
           >
-            <Send className="w-4 h-4" />
-            {t('chat.send')}
+            <Send className="w-5 h-5" />
           </button>
         </div>
       </div>
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl border border-gray-200 p-5">
+            <div className="text-lg font-bold text-gray-900">
+              {t('chat.delete', { defaultValue: 'Delete' })}
+            </div>
+            <div className="text-sm text-gray-600 mt-1">
+              {t('chat.confirmDelete', { defaultValue: 'Delete this message?' })}
+            </div>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                className="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                onClick={() => setConfirmDeleteId(null)}
+              >
+                {t('cancel', { defaultValue: 'Cancel' })}
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700"
+                onClick={async () => {
+                  const id = confirmDeleteId;
+                  setConfirmDeleteId(null);
+                  await handleDelete(id);
+                }}
+                disabled={busyId === confirmDeleteId}
+              >
+                {t('chat.delete', { defaultValue: 'Delete' })}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

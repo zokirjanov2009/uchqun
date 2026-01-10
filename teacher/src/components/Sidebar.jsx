@@ -1,9 +1,8 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   ClipboardList, 
   Image as ImageIcon, 
   LayoutDashboard, 
-  LogOut,
   Users,
   Utensils,
   MessageCircle,
@@ -15,8 +14,7 @@ import { getUnreadTotalForPrefix } from '../shared/services/chatStore';
 
 const Sidebar = ({ onClose }) => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
    const { t } = useTranslation();
   const unreadChat = getUnreadTotalForPrefix('parent:', 'teacher');
 
@@ -35,11 +33,6 @@ const Sidebar = ({ onClose }) => {
       return location.pathname === '/teacher';
     }
     return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   return (
@@ -103,14 +96,6 @@ const Sidebar = ({ onClose }) => {
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
         </div>
-        
-        <button
-          onClick={handleLogout}
-          className="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-red-600 bg-white border border-red-100 rounded-xl hover:bg-red-50 hover:border-red-200 transition-all duration-200 shadow-sm active:scale-95"
-        >
-          <LogOut className="h-4 w-4" />
-          {t('nav.logout')}
-        </button>
       </div>
     </div>
   );

@@ -48,13 +48,26 @@ export async function listConversations() {
   return [];
 }
 
-export async function updateMessage() {
-  // Not supported server-side
-  return [];
+export async function updateMessage(messageId, content) {
+  if (!messageId) return null;
+  if (!content?.trim()) return null;
+  try {
+    const res = await api.put(`/chat/messages/${messageId}`, { content: content.trim() });
+    return res.data;
+  } catch (e) {
+    console.warn('updateMessage error', e?.response?.status, e?.response?.data);
+    return null;
+  }
 }
 
-export async function deleteMessage() {
-  // Not supported server-side
-  return [];
+export async function deleteMessage(messageId) {
+  if (!messageId) return null;
+  try {
+    const res = await api.delete(`/chat/messages/${messageId}`);
+    return res.data;
+  } catch (e) {
+    console.warn('deleteMessage error', e?.response?.status, e?.response?.data);
+    return null;
+  }
 }
 

@@ -2,7 +2,8 @@ export async function up(queryInterface, Sequelize) {
   await queryInterface.createTable('chat_messages', {
     id: {
       type: Sequelize.UUID,
-      defaultValue: Sequelize.fn('uuid_generate_v4'),
+      // Use Sequelize UUIDV4 to avoid requiring uuid-ossp extension
+      defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
       allowNull: false,
     },

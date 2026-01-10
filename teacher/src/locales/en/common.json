@@ -194,7 +194,9 @@
     "parent": "Parent",
     "teacher": "Teacher",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "confirmDelete": "Delete this message?",
+    "scrollToBottom": "Scroll to bottom"
   }
 }
 

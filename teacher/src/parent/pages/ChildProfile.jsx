@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Card from '../components/Card';
 import LoadingSpinner from '../components/LoadingSpinner';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import {
   User,
   Calendar,
@@ -39,6 +40,11 @@ const ChildProfile = () => {
     ru: 'ru-RU',
     en: 'en-US',
   }[i18n.language] || 'en-US';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     if (selectedChildId) {
@@ -272,6 +278,26 @@ const ChildProfile = () => {
 
         {/* --- Right Column: Sidebar --- */}
         <div className="space-y-8">
+          {/* Account controls (Language + Exit) */}
+          <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              {t('profile.account', { defaultValue: 'Account' })}
+            </h3>
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-semibold text-gray-700">
+                {t('language', { defaultValue: 'Language' })}
+              </div>
+              <LanguageSwitcher />
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              {t('nav.exit', { defaultValue: 'Exit' })}
+            </button>
+          </section>
+
           {/* Activity Summary - Weekly Results */}
           <section className="bg-gray-800 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden">
             <div className="absolute bottom-0 right-0 opacity-20">

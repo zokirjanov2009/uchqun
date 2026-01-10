@@ -9,13 +9,16 @@ import {
   Bot,
   Star,
   MessageCircle,
+  Bell,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '../context/NotificationContext';
 
 const Sidebar = ({ onClose }) => {
   const location = useLocation();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { count, refreshNotifications } = useNotification();
 
   const navigation = [
     { name: t('nav.home'), href: '/', icon: LayoutDashboard },
@@ -26,6 +29,7 @@ const Sidebar = ({ onClose }) => {
     { name: t('nav.rating'), href: '/rating', icon: Star },
     { name: t('nav.aiChat'), href: '/ai-chat', icon: Bot },
     { name: t('nav.chat'), href: '/chat', icon: MessageCircle },
+    { name: t('nav.notifications', { defaultValue: 'Notifications' }), href: '/notifications', icon: Bell, badge: count },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -58,13 +62,23 @@ const Sidebar = ({ onClose }) => {
                   ? 'bg-orange-50 text-orange-600 shadow-sm'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
-              onClick={onClose}
+              onClick={() => {
+                if (item.href === '/notifications') refreshNotifications();
+                onClose?.();
+              }}
             >
-              <item.icon 
-                className={`mr-3 h-5 w-5 transition-colors ${
-                  Active ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'
-                }`} 
-              />
+              <div className="relative flex items-center">
+                <item.icon
+                  className={`mr-3 h-5 w-5 transition-colors ${
+                    Active ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'
+                  }`}
+                />
+                {item.badge > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-orange-600 text-white text-[10px] leading-none font-extrabold rounded-full px-1.5 py-1 border-2 border-white shadow-sm">
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
+              </div>
               <span className="text-sm font-medium">{item.name}</span>
               {Active && (
                 <div className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-600" />
