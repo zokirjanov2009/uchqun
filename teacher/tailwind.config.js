@@ -1,40 +1,32 @@
 /** @type {import('tailwindcss').Config} */
+import colors from 'tailwindcss/colors';
+
+const brandPurple = {
+  50: '#f5f3ff',
+  100: '#ede9fe',
+  200: '#ddd6fe',
+  300: '#c4b5fd',
+  400: '#a78bfa',
+  500: '#8b5cf6',
+  600: '#7c3aed',
+  700: '#6d28d9',
+  800: '#5b21b6',
+  900: '#4c1d95',
+};
+
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    // Important: define colors at top-level (not only extend) to ensure defaults are overridden.
+    colors: {
+      ...colors,
+      orange: brandPurple,
+      primary: brandPurple,
+    },
     extend: {
-      colors: {
-        // Brand palette (dark purple / violet)
-        // NOTE: We intentionally override `orange-*` usages across the teacher app
-        // so the existing UI automatically switches to purple without rewriting every component.
-        orange: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-        },
-        primary: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-        },
-      },
       animation: {
         'slide-in': 'slideIn 0.3s ease-out',
       },
@@ -44,7 +36,7 @@ export default {
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
       },
-    },
+    }
   },
   plugins: [],
 }
