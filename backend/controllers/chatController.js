@@ -130,8 +130,10 @@ export const deleteMessage = async (req, res) => {
     }
 
     const isAdmin = req.user.role === 'admin' || req.user.role === 'superAdmin';
+    const isTeacher = req.user.role === 'teacher';
     const isOwner = msg.senderId === req.user.id;
-    if (!isAdmin && !isOwner) {
+    // Allow moderation: teacher/admin can delete any message in allowed conversations
+    if (!isAdmin && !isTeacher && !isOwner) {
       return res.status(403).json({ error: 'Only the sender can delete this message' });
     }
 

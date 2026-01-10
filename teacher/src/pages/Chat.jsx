@@ -71,6 +71,8 @@ const Chat = () => {
     [messages]
   );
 
+  const canModerateDelete = user?.role === 'teacher' || user?.role === 'admin' || user?.role === 'superAdmin';
+
   useEffect(() => {
     if (isAtBottom || justSentRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -198,21 +200,23 @@ const Chat = () => {
                     <div className="text-xs font-semibold mb-1">
                       {isYou ? t('chat.you') : t('chat.parent')}
                     </div>
-                    {isYou && (
+                    {(isYou || canModerateDelete) && (
                       <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          className="p-1 rounded-md hover:bg-black/5"
-                          aria-label={t('chat.edit', { defaultValue: 'Edit' })}
-                          title={t('chat.edit', { defaultValue: 'Edit' })}
-                          disabled={busyId === msg.id}
-                          onClick={() => {
-                            setEditingId(msg.id);
-                            setEditValue((msg.content || msg.text || '').toString());
-                          }}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
+                        {isYou && (
+                          <button
+                            type="button"
+                            className="p-1 rounded-md hover:bg-black/5"
+                            aria-label={t('chat.edit', { defaultValue: 'Edit' })}
+                            title={t('chat.edit', { defaultValue: 'Edit' })}
+                            disabled={busyId === msg.id}
+                            onClick={() => {
+                              setEditingId(msg.id);
+                              setEditValue((msg.content || msg.text || '').toString());
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="p-1 rounded-md hover:bg-black/5 text-red-600"
