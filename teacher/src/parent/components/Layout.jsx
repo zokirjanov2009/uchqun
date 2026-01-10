@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -7,6 +7,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
 const Layout = () => {
+  const location = useLocation();
   const { count, refreshNotifications } = useNotification();
   const { logout } = useAuth();
   const navigate = useNavigate();

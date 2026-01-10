@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://uchqun-production.up.railway.app/api';
+
 const api = axios.create({
-  baseURL: 'https://uchqun-production.up.railway.app/api',
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -34,7 +36,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
           const response = await axios.post(
-            `https://uchqun-production.up.railway.app/api/auth/refresh`,
+            `${BASE_URL}/auth/refresh`,
             { refreshToken }
           );
 
@@ -49,6 +51,11 @@ api.interceptors.response.use(
         // Refresh failed, logout user
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        try {
+          window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'sessionExpired' }));
+        } catch {
+          // ignore
+        }
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

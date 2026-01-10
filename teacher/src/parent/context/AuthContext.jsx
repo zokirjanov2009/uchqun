@@ -52,6 +52,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    // If running inside React Native WebView, notify the native shell
+    try {
+      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'logout' }));
+    } catch {
+      // ignore
+    }
   };
 
   const value = {

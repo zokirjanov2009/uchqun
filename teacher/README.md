@@ -69,6 +69,16 @@ teacher/
 
 This frontend connects to the backend API at `https://uchqun-production.up.railway.app/api` (production) or `http://localhost:5000/api` (local development). Make sure the backend is running before starting the frontend.
 
+## Deploy (Vercel)
+
+This project is a Vite SPA with client-side routing (e.g. `/teacher`). For Vercel we include `teacher/vercel.json` rewrite so refresh/deep-links won't 404.
+
+- **Root Directory**: `teacher`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL` = `https://uchqun-production.up.railway.app/api`
+
 ## Login
 
 Use teacher credentials to log in:
